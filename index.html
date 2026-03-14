@@ -1083,6 +1083,420 @@
         color: var(--text);
       }
 
+      /* WALLET BAR */
+      .wallet-bar {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 1rem;
+        overflow-x: auto;
+        padding-bottom: 2px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--cyan) transparent;
+      }
+      .wallet-bar::-webkit-scrollbar {
+        height: 2px;
+      }
+      .wallet-bar::-webkit-scrollbar-thumb {
+        background: var(--cyan);
+        border-radius: 1px;
+      }
+      .w-tab {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 6px 12px;
+        border: 1px solid var(--faint);
+        border-radius: 2px;
+        background: var(--panel);
+        color: var(--muted);
+        cursor: pointer;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        white-space: nowrap;
+        transition: all 0.15s;
+        flex-shrink: 0;
+      }
+      .w-tab:hover {
+        border-color: var(--bdr);
+        color: var(--text);
+      }
+      .w-tab.active {
+        border-color: var(--cyan);
+        color: var(--cyan);
+        background: var(--cyan-d);
+      }
+      .w-tab.dragging {
+        opacity: 0.4;
+        border-style: dashed;
+      }
+      .w-tab.drag-over {
+        border-color: var(--cyan);
+        box-shadow: 2px 0 0 var(--cyan);
+      }
+      .w-sym {
+        font-size: 14px;
+        font-weight: 700;
+        min-width: 12px;
+        text-align: center;
+        font-family: "Orbitron", sans-serif;
+      }
+      .w-name {
+        max-width: 90px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .w-add {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 11px;
+        border: 1px dashed var(--faint);
+        border-radius: 2px;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        white-space: nowrap;
+        transition: all 0.15s;
+        flex-shrink: 0;
+      }
+      .w-add:hover {
+        border-color: var(--cyan);
+        color: var(--cyan);
+      }
+
+      /* WALLET CONTEXT MENU */
+      .w-ctx {
+        position: fixed;
+        z-index: 20000;
+        background: var(--panel2);
+        border: 1px solid var(--bdr2);
+        border-radius: 3px;
+        padding: 4px;
+        min-width: 160px;
+        box-shadow:
+          0 8px 28px rgba(0, 0, 0, 0.7),
+          0 0 16px rgba(0, 245, 255, 0.08);
+        animation: ctxIn 0.12s ease;
+      }
+      @keyframes ctxIn {
+        from {
+          opacity: 0;
+          transform: scale(0.96);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .w-ctx::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--cyan),
+          transparent
+        );
+      }
+      .ctx-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-radius: 2px;
+        cursor: pointer;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        transition:
+          background 0.1s,
+          color 0.1s;
+        white-space: nowrap;
+      }
+      .ctx-item:hover {
+        background: var(--cyan-d);
+        color: var(--cyan);
+      }
+      .ctx-item.danger:hover {
+        background: var(--red-d);
+        color: var(--red);
+      }
+      .ctx-item.disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .ctx-item.disabled:hover {
+        background: transparent;
+        color: var(--muted);
+      }
+      .ctx-item svg {
+        flex-shrink: 0;
+        opacity: 0.7;
+      }
+      .ctx-item:hover svg {
+        opacity: 1;
+      }
+      .ctx-sep {
+        height: 1px;
+        background: var(--faint);
+        margin: 3px 0;
+      }
+
+      /* CURRENCY PICKER */
+      .cur-pick {
+        position: relative;
+        flex-shrink: 0;
+      }
+      .cur-pick-btn {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg2);
+        border: 1px solid var(--faint);
+        border-radius: 2px;
+        color: var(--muted);
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .cur-pick-btn:hover,
+      .cur-pick.open .cur-pick-btn {
+        border-color: var(--cyan);
+        color: var(--cyan);
+        background: var(--cyan-d);
+      }
+      .cur-pick-list {
+        position: absolute;
+        top: calc(100% + 4px);
+        right: 0;
+        width: 240px;
+        background: var(--panel2);
+        border: 1px solid var(--bdr2);
+        border-radius: 3px;
+        z-index: 20001;
+        padding: 6px;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-4px);
+        transition:
+          opacity 0.14s,
+          transform 0.14s;
+        box-shadow:
+          0 10px 30px rgba(0, 0, 0, 0.7),
+          0 0 16px rgba(0, 245, 255, 0.07);
+      }
+      .cur-pick.open .cur-pick-list {
+        opacity: 1;
+        pointer-events: all;
+        transform: translateY(0);
+      }
+      .cur-pick-list::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--cyan),
+          transparent
+        );
+      }
+      .cur-sec {
+        font-size: 8px;
+        letter-spacing: 0.2em;
+        color: var(--muted);
+        padding: 6px 6px 3px;
+        text-transform: uppercase;
+      }
+      .cur-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 3px;
+        margin-bottom: 4px;
+      }
+      .cur-opt {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        padding: 6px 4px;
+        border: 1px solid var(--faint);
+        border-radius: 2px;
+        cursor: pointer;
+        transition: all 0.12s;
+        background: var(--panel);
+      }
+      .cur-opt:hover {
+        border-color: var(--cyan);
+        background: var(--cyan-d);
+      }
+      .cur-sym {
+        font-family: "Orbitron", sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--cyan);
+        line-height: 1;
+      }
+      .cur-code {
+        font-family: "Share Tech Mono", monospace;
+        font-size: 8px;
+        color: var(--muted);
+        letter-spacing: 0.08em;
+      }
+
+      /* MODAL */
+      .modal-ov {
+        position: fixed;
+        inset: 0;
+        z-index: 10000;
+        background: rgba(5, 5, 8, 0.88);
+        backdrop-filter: blur(2px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s;
+      }
+      .modal-ov.open {
+        opacity: 1;
+        pointer-events: all;
+      }
+      .modal-box {
+        background: var(--panel2);
+        border: 1px solid var(--bdr2);
+        border-radius: 3px;
+        padding: 1.75rem;
+        width: min(440px, 92vw);
+        position: relative;
+        transform: translateY(14px);
+        transition: transform 0.22s;
+      }
+      .modal-ov.open .modal-box {
+        transform: translateY(0);
+      }
+      .modal-box::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--cyan),
+          transparent
+        );
+      }
+      .modal-ttl {
+        font-size: 9px;
+        letter-spacing: 0.22em;
+        color: var(--cyan);
+        margin-bottom: 1.25rem;
+        text-transform: uppercase;
+      }
+      .modal-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .modal-row.s {
+        grid-template-columns: 1fr;
+      }
+      .modal-btns {
+        display: flex;
+        gap: 8px;
+        margin-top: 1.25rem;
+      }
+      .btn-m {
+        flex: 1;
+        padding: 10px;
+        border-radius: 2px;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        cursor: pointer;
+        transition: all 0.15s;
+        text-transform: uppercase;
+      }
+      .btn-m.ok {
+        border: 1px solid var(--cyan);
+        background: var(--cyan-d);
+        color: var(--cyan);
+      }
+      .btn-m.ok:hover {
+        background: rgba(0, 245, 255, 0.18);
+        box-shadow: 0 0 16px var(--cyan-g);
+      }
+      .btn-m.no {
+        border: 1px solid var(--faint);
+        background: transparent;
+        color: var(--muted);
+      }
+      .btn-m.no:hover {
+        border-color: var(--red);
+        color: var(--red);
+      }
+      .modal-hint {
+        font-size: 9px;
+        color: var(--muted);
+        letter-spacing: 0.1em;
+        margin-top: 8px;
+      }
+
+      /* Transfer badge in log */
+      .tx.transfer::before {
+        background: var(--cyan);
+      }
+      .tx-xfer {
+        font-size: 9px;
+        color: var(--cyan);
+        letter-spacing: 0.08em;
+        background: var(--cyan-d);
+        border: 1px solid var(--bdr);
+        padding: 1px 6px;
+        border-radius: 2px;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      /* dynamic amount symbol */
+      .amt-wrap::before {
+        display: none;
+      }
+      .amt-sym {
+        position: absolute;
+        left: 11px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--cyan);
+        font-family: "Share Tech Mono", monospace;
+        font-size: 13px;
+        pointer-events: none;
+        z-index: 1;
+        opacity: 0.65;
+        max-width: 28px;
+        overflow: hidden;
+        text-overflow: clip;
+        white-space: nowrap;
+      }
+
       @media (max-width: 480px) {
         .form-row {
           grid-template-columns: 1fr;
@@ -1122,12 +1536,14 @@
         <span id="liveclock">--:--:--</span>
       </div>
 
+      <div class="wallet-bar" id="wallet-bar"></div>
+
       <div class="balance-card">
         <div class="c tl"></div>
         <div class="c tr"></div>
         <div class="c bl"></div>
         <div class="c br"></div>
-        <div class="blbl">// CURRENT BALANCE //</div>
+        <div class="blbl" id="bal-wallet-label">// WALLET //</div>
         <div class="balance-amount" id="balance" onclick="openFsBalance()">
           $0.00
         </div>
@@ -1155,9 +1571,10 @@
             />
           </div>
           <div>
-            <label>Amount ($)</label>
+            <label>Amount</label>
             <div class="amt-wrap">
-              <input
+              <span class="amt-sym" id="amt-sym">$</span
+              ><input
                 type="text"
                 id="f-amount"
                 placeholder="0.00"
@@ -1225,6 +1642,22 @@
       </div>
 
       <div class="io-bar">
+        <button
+          class="btn-io"
+          onclick="openTransferModal()"
+          style="margin-right: auto"
+        >
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+            <path
+              d="M1 3.5h9M7 1l3 2.5L7 6M10 7.5H1M4 5l-3 2.5L4 10"
+              stroke="currentColor"
+              stroke-width="1.3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          TRANSFER
+        </button>
         <input
           type="file"
           id="csv-import-input"
@@ -1315,6 +1748,196 @@
 
       <div id="log"></div>
     </div>
+    <!-- NEW WALLET MODAL -->
+    <div class="modal-ov" id="wallet-modal">
+      <div class="modal-box">
+        <div class="modal-ttl">// NEW_WALLET //</div>
+        <div class="modal-row">
+          <div>
+            <label>Wallet Name</label
+            ><input
+              type="text"
+              id="wm-name"
+              placeholder="e.g. BTC_COLD..."
+              maxlength="24"
+            />
+          </div>
+          <div>
+            <label>Symbol ($, ₿, XMR...)</label>
+            <div style="display: flex; gap: 6px">
+              <input
+                type="text"
+                id="wm-sym"
+                placeholder="$"
+                maxlength="5"
+                style="flex: 1; min-width: 0"
+              />
+              <div class="cur-pick" id="wm-cur-pick">
+                <button
+                  class="cur-pick-btn"
+                  onclick="toggleCurPick('wm')"
+                  title="Pick currency"
+                >
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <circle
+                      cx="6"
+                      cy="6"
+                      r="5"
+                      stroke="currentColor"
+                      stroke-width="1.3"
+                    />
+                    <path
+                      d="M4 4.5c0-1.1.9-1.5 2-1.5s2 .5 2 1.5c0 1.5-2 1.5-2 2.5"
+                      stroke="currentColor"
+                      stroke-width="1.2"
+                      stroke-linecap="round"
+                    />
+                    <circle cx="6" cy="9" r=".6" fill="currentColor" />
+                  </svg>
+                </button>
+                <div class="cur-pick-list" id="wm-cur-list"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-hint">
+          // SYMBOL WILL APPEAR ON BALANCE AND TRANSACTIONS //
+        </div>
+        <div class="modal-btns">
+          <button class="btn-m no" onclick="closeWalletModal()">CANCEL</button>
+          <button class="btn-m ok" onclick="createWallet()">
+            CREATE_WALLET
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EDIT WALLET MODAL -->
+    <div class="modal-ov" id="edit-wallet-modal">
+      <div class="modal-box">
+        <div class="modal-ttl">// EDIT_WALLET //</div>
+        <div class="modal-row">
+          <div>
+            <label>Wallet Name</label
+            ><input
+              type="text"
+              id="ewm-name"
+              placeholder="e.g. BTC_COLD..."
+              maxlength="24"
+            />
+          </div>
+          <div>
+            <label>Symbol ($, ₿, XMR...)</label>
+            <div style="display: flex; gap: 6px">
+              <input
+                type="text"
+                id="ewm-sym"
+                placeholder="$"
+                maxlength="5"
+                style="flex: 1; min-width: 0"
+              />
+              <div class="cur-pick" id="ewm-cur-pick">
+                <button
+                  class="cur-pick-btn"
+                  onclick="toggleCurPick('ewm')"
+                  title="Pick currency"
+                >
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <circle
+                      cx="6"
+                      cy="6"
+                      r="5"
+                      stroke="currentColor"
+                      stroke-width="1.3"
+                    />
+                    <path
+                      d="M4 4.5c0-1.1.9-1.5 2-1.5s2 .5 2 1.5c0 1.5-2 1.5-2 2.5"
+                      stroke="currentColor"
+                      stroke-width="1.2"
+                      stroke-linecap="round"
+                    />
+                    <circle cx="6" cy="9" r=".6" fill="currentColor" />
+                  </svg>
+                </button>
+                <div class="cur-pick-list" id="ewm-cur-list"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <input type="hidden" id="ewm-id" />
+        <div class="modal-btns">
+          <button class="btn-m no" onclick="closeEditWalletModal()">
+            CANCEL
+          </button>
+          <button class="btn-m ok" onclick="saveEditWallet()">
+            SAVE_CHANGES
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRANSFER MODAL -->
+    <div class="modal-ov" id="transfer-modal">
+      <div class="modal-box">
+        <div class="modal-ttl">// TRANSFER_FUNDS //</div>
+        <div class="modal-row">
+          <div>
+            <label>From Wallet</label
+            ><select id="tm-from" onchange="updateTransferAll()"></select>
+          </div>
+          <div>
+            <label>To Wallet</label
+            ><select id="tm-to"></select>
+          </div>
+        </div>
+        <div class="modal-row">
+          <div>
+            <label>Amount</label>
+            <div style="display: flex; gap: 6px; align-items: center">
+              <input
+                type="text"
+                id="tm-amount"
+                placeholder="0.00"
+                inputmode="decimal"
+                autocomplete="off"
+                style="flex: 1"
+              />
+              <button
+                class="btn-m ok"
+                id="tm-all-btn"
+                onclick="fillAllBalance()"
+                style="
+                  flex: 0 0 auto;
+                  padding: 8px 10px;
+                  font-size: 9px;
+                  letter-spacing: 0.1em;
+                  white-space: nowrap;
+                "
+                title="Transfer entire balance"
+              >
+                ALL
+              </button>
+            </div>
+          </div>
+          <div><label>Date</label><input type="date" id="tm-date" /></div>
+        </div>
+        <div class="modal-row s">
+          <div>
+            <label>Memo</label
+            ><input type="text" id="tm-memo" placeholder="transfer note..." />
+          </div>
+        </div>
+        <div class="modal-btns">
+          <button class="btn-m no" onclick="closeTransferModal()">
+            CANCEL
+          </button>
+          <button class="btn-m ok" onclick="executeTransfer()">
+            EXECUTE_TRANSFER
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="toast" id="toast"></div>
     <div class="bal-fs" id="bal-fs" onclick="closeFsBalance()">
       <div class="bal-fs-inner">
@@ -1463,13 +2086,30 @@
 
       /* ── DATA ── */
       const KEY = "void_wallet_v2";
+      const KEY_W = "void_wallets_v1";
+
       let txs = JSON.parse(localStorage.getItem(KEY) || "[]");
+      let wallets = JSON.parse(localStorage.getItem(KEY_W) || "null");
+      if (!wallets) {
+        wallets = [{ id: "w1", name: "PRIMARY", symbol: "$" }];
+        localStorage.setItem(KEY_W, JSON.stringify(wallets));
+        // migrate existing txs to default wallet
+        txs.forEach((t) => {
+          if (!t.walletId) t.walletId = "w1";
+        });
+        localStorage.setItem(KEY, JSON.stringify(txs));
+      }
+      // ensure all txs have walletId
+      txs.forEach((t) => {
+        if (!t.walletId) t.walletId = wallets[0].id;
+      });
+
+      let currentWalletId = wallets[0].id;
       let filter = "all",
         txType = "income";
       const today = new Date().toISOString().slice(0, 10);
       document.getElementById("f-date").value = today;
 
-      /* clock */
       setInterval(() => {
         document.getElementById("liveclock").textContent =
           new Date().toLocaleTimeString("en-GB", { hour12: false });
@@ -1478,53 +2118,65 @@
       function save() {
         localStorage.setItem(KEY, JSON.stringify(txs));
       }
-      function fmt(n) {
+      function saveW() {
+        localStorage.setItem(KEY_W, JSON.stringify(wallets));
+      }
+      function curWallet() {
+        return wallets.find((w) => w.id === currentWalletId) || wallets[0];
+      }
+      function walletById(id) {
+        return wallets.find((w) => w.id === id);
+      }
+
+      function fmt(n, sym) {
+        sym = sym ?? curWallet().symbol;
         return (
-          "$" +
+          sym +
           Math.abs(n).toLocaleString("en-US", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
           })
         );
       }
-      function fmtS(n, t) {
-        return (t === "income" ? "+" : "-") + fmt(n);
+      function fmtS(n, t, sym) {
+        return (t === "income" ? "+" : "-") + fmt(n, sym);
       }
 
-      function fmtCompact(n) {
+      function fmtCompact(n, sym) {
+        sym = sym ?? curWallet().symbol;
         const abs = Math.abs(n),
           sign = n < 0 ? "-" : "";
         if (abs >= 1e12)
           return (
             sign +
-            "$" +
+            sym +
             (abs / 1e12).toLocaleString("en-US", { maximumFractionDigits: 2 }) +
             "T"
           );
         if (abs >= 1e9)
           return (
             sign +
-            "$" +
+            sym +
             (abs / 1e9).toLocaleString("en-US", { maximumFractionDigits: 2 }) +
             "B"
           );
         if (abs >= 1e6)
           return (
             sign +
-            "$" +
+            sym +
             (abs / 1e6).toLocaleString("en-US", { maximumFractionDigits: 2 }) +
             "M"
           );
         if (abs >= 1e3)
           return (
             sign +
-            "$" +
+            sym +
             (abs / 1e3).toLocaleString("en-US", { maximumFractionDigits: 2 }) +
             "K"
           );
         return (
           sign +
-          "$" +
+          sym +
           abs.toLocaleString("en-US", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
@@ -1532,13 +2184,423 @@
         );
       }
 
+      /* ── WALLET BAR ── */
+      let dragSrcIdx = null;
+
+      function renderWalletBar() {
+        const bar = document.getElementById("wallet-bar");
+        bar.innerHTML =
+          wallets
+            .map(
+              (w, i) => `
+    <div class="w-tab${w.id === currentWalletId ? " active" : ""}"
+      data-id="${w.id}" data-idx="${i}"
+      draggable="true"
+      onclick="switchWallet('${w.id}')"
+      oncontextmenu="openWalletCtx(event,'${w.id}')">
+      <span class="w-sym">${esc(w.symbol)}</span>
+      <span class="w-name">${esc(w.name)}</span>
+    </div>`,
+            )
+            .join("") +
+          `<button class="w-add" onclick="openWalletModal()">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1v8M1 5h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      NEW
+    </button>`;
+        document.getElementById("bal-wallet-label").textContent =
+          "// " + curWallet().name + " //";
+        document.getElementById("amt-sym").textContent = curWallet().symbol;
+        initDrag();
+      }
+
+      function initDrag() {
+        const tabs = document.querySelectorAll(".w-tab[draggable]");
+        tabs.forEach((tab) => {
+          tab.addEventListener("dragstart", (e) => {
+            dragSrcIdx = +tab.dataset.idx;
+            tab.classList.add("dragging");
+            e.dataTransfer.effectAllowed = "move";
+          });
+          tab.addEventListener("dragend", () => {
+            tab.classList.remove("dragging");
+            document
+              .querySelectorAll(".w-tab")
+              .forEach((t) => t.classList.remove("drag-over"));
+          });
+          tab.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+            document
+              .querySelectorAll(".w-tab")
+              .forEach((t) => t.classList.remove("drag-over"));
+            if (+tab.dataset.idx !== dragSrcIdx) tab.classList.add("drag-over");
+          });
+          tab.addEventListener("drop", (e) => {
+            e.preventDefault();
+            const destIdx = +tab.dataset.idx;
+            if (dragSrcIdx === null || dragSrcIdx === destIdx) return;
+            const moved = wallets.splice(dragSrcIdx, 1)[0];
+            wallets.splice(destIdx, 0, moved);
+            dragSrcIdx = null;
+            saveW();
+            renderWalletBar();
+            sfx.click();
+          });
+        });
+      }
+
+      /* ── WALLET CONTEXT MENU ── */
+      let ctxEl = null;
+      function openWalletCtx(e, id) {
+        e.preventDefault();
+        e.stopPropagation();
+        sfx.click();
+        closeWalletCtx();
+        renderCtxMenu(id, false);
+        positionCtx(e);
+        setTimeout(
+          () =>
+            document.addEventListener("click", onCtxOutside, { capture: true }),
+          0,
+        );
+      }
+
+      function renderCtxMenu(id, confirmMode) {
+        if (!ctxEl) {
+          ctxEl = document.createElement("div");
+          ctxEl.className = "w-ctx";
+          document.body.appendChild(ctxEl);
+        }
+        const canDel = wallets.length > 1;
+        const wTxs = txs.filter((t) => t.walletId === id);
+        const bal =
+          wTxs
+            .filter((t) => t.type === "income")
+            .reduce((s, t) => s + t.amount, 0) -
+          wTxs
+            .filter((t) => t.type === "expense")
+            .reduce((s, t) => s + t.amount, 0);
+        const hasBalance = Math.abs(bal) > 0.001;
+
+        if (confirmMode) {
+          ctxEl.innerHTML = `
+      <div style="padding:8px 12px 6px;font-size:9px;letter-spacing:.14em;color:var(--red)">// CONFIRM DELETE //</div>
+      <div class="ctx-sep"></div>
+      <div class="ctx-item" onclick="event.stopPropagation();renderCtxMenu('${id}',false)">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 2l9 9M11 2L2 11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        CANCEL
+      </div>
+      <div class="ctx-item danger" onclick="event.stopPropagation();confirmDeleteWallet('${id}')">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><polyline points="2,3.5 11,3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M4.5 3.5V2.5h4v1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M3 3.5l.7 7.5h5.6l.7-7.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+        YES, DELETE
+      </div>`;
+        } else {
+          ctxEl.innerHTML = `
+      <div class="ctx-item" onclick="event.stopPropagation();openEditWalletModal('${id}');closeWalletCtx()">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M9 2l2 2-7 7H2V9l7-7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M7.5 3.5l2 2" stroke="currentColor" stroke-width="1.3"/></svg>
+        EDIT_WALLET
+      </div>
+      ${
+        canDel
+          ? `<div class="ctx-sep"></div>
+      <div class="ctx-item${hasBalance ? " disabled" : " danger"}" onclick="event.stopPropagation();${hasBalance ? `sfx.err();showToast('ERR: BALANCE_NOT_ZERO','err')` : `renderCtxMenu('${id}',true)`}">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><polyline points="2,3.5 11,3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M4.5 3.5V2.5h4v1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M3 3.5l.7 7.5h5.6l.7-7.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+        ${hasBalance ? '<span style="opacity:.4">DELETE_WALLET</span><span style="font-size:9px;color:var(--red);margin-left:auto">BAL≠0</span>' : "DELETE_WALLET"}
+      </div>`
+          : ""
+      }`;
+        }
+      }
+
+      function positionCtx(e) {
+        if (!ctxEl) return;
+        const vw = window.innerWidth,
+          vh = window.innerHeight;
+        let x = e.clientX,
+          y = e.clientY;
+        ctxEl.style.left = "0";
+        ctxEl.style.top = "0"; // reset before measuring
+        const r = ctxEl.getBoundingClientRect();
+        if (x + r.width > vw - 8) x = vw - r.width - 8;
+        if (y + r.height > vh - 8) y = vh - r.height - 8;
+        ctxEl.style.left = x + "px";
+        ctxEl.style.top = y + "px";
+      }
+
+      function onCtxOutside(e) {
+        if (ctxEl && !ctxEl.contains(e.target)) {
+          closeWalletCtx();
+        } else if (ctxEl) {
+          // keep listening if click was inside menu
+          setTimeout(
+            () =>
+              document.addEventListener("click", onCtxOutside, {
+                capture: true,
+                once: true,
+              }),
+            0,
+          );
+        }
+      }
+
+      function closeWalletCtx() {
+        document.removeEventListener("click", onCtxOutside, { capture: true });
+        if (ctxEl) {
+          ctxEl.remove();
+          ctxEl = null;
+        }
+      }
+
+      function confirmDeleteWallet(id) {
+        closeWalletCtx();
+        deleteWallet(id);
+      }
+
+      /* ── EDIT WALLET ── */
+      function openEditWalletModal(id) {
+        const w = walletById(id);
+        document.getElementById("ewm-id").value = id;
+        document.getElementById("ewm-name").value = w.name;
+        document.getElementById("ewm-sym").value = w.symbol;
+        document.getElementById("edit-wallet-modal").classList.add("open");
+      }
+      function closeEditWalletModal() {
+        document.getElementById("edit-wallet-modal").classList.remove("open");
+      }
+      function saveEditWallet() {
+        const id = document.getElementById("ewm-id").value;
+        const name = document
+          .getElementById("ewm-name")
+          .value.trim()
+          .toUpperCase();
+        const symbol = document.getElementById("ewm-sym").value.trim() || "$";
+        if (!name) {
+          sfx.err();
+          const el = document.getElementById("ewm-name");
+          el.style.borderColor = "var(--red)";
+          setTimeout(() => (el.style.borderColor = ""), 1200);
+          return;
+        }
+        const w = walletById(id);
+        w.name = name;
+        w.symbol = symbol;
+        saveW();
+        sfx.add();
+        renderWalletBar();
+        updateSummary();
+        renderLog();
+        closeEditWalletModal();
+        showToast("WALLET_UPDATED // " + name, "ok");
+      }
+
+      function switchWallet(id) {
+        sfx.click();
+        currentWalletId = id;
+        renderWalletBar();
+        updateSummary(true);
+        renderLog();
+      }
+
+      function openWalletModal() {
+        sfx.click();
+        document.getElementById("wm-name").value = "";
+        document.getElementById("wm-sym").value = "$";
+        document.getElementById("wallet-modal").classList.add("open");
+      }
+      function closeWalletModal() {
+        document.getElementById("wallet-modal").classList.remove("open");
+      }
+      function createWallet() {
+        const name = document
+          .getElementById("wm-name")
+          .value.trim()
+          .toUpperCase();
+        const symbol = document.getElementById("wm-sym").value.trim() || "$";
+        if (!name) {
+          sfx.err();
+          document.getElementById("wm-name").style.borderColor = "var(--red)";
+          setTimeout(
+            () => (document.getElementById("wm-name").style.borderColor = ""),
+            1200,
+          );
+          return;
+        }
+        sfx.add();
+        const id = "w" + Date.now();
+        wallets.push({ id, name, symbol });
+        saveW();
+        currentWalletId = id;
+        renderWalletBar();
+        updateSummary();
+        renderLog();
+        closeWalletModal();
+        showToast("WALLET_CREATED // " + name, "ok");
+      }
+      function deleteWallet(id) {
+        if (wallets.length <= 1) return;
+        const wTxs = txs.filter((t) => t.walletId === id);
+        const bal =
+          wTxs
+            .filter((t) => t.type === "income")
+            .reduce((s, t) => s + t.amount, 0) -
+          wTxs
+            .filter((t) => t.type === "expense")
+            .reduce((s, t) => s + t.amount, 0);
+        if (Math.abs(bal) > 0.001) {
+          sfx.err();
+          showToast("ERR: BALANCE_NOT_ZERO", "err");
+          return;
+        }
+        sfx.del();
+        txs = txs.filter((t) => t.walletId !== id);
+        wallets = wallets.filter((w) => w.id !== id);
+        if (currentWalletId === id) currentWalletId = wallets[0].id;
+        save();
+        saveW();
+        renderWalletBar();
+        updateSummary(true);
+        renderLog();
+        showToast("WALLET_DELETED", "ok");
+      }
+
+      /* ── FILL ALL BALANCE ── */
+      function updateTransferAll() {
+        const fromId = document.getElementById("tm-from").value;
+        const wTxs = txs.filter((t) => t.walletId === fromId);
+        const bal =
+          wTxs
+            .filter((t) => t.type === "income")
+            .reduce((s, t) => s + t.amount, 0) -
+          wTxs
+            .filter((t) => t.type === "expense")
+            .reduce((s, t) => s + t.amount, 0);
+        const btn = document.getElementById("tm-all-btn");
+        if (btn) {
+          const sym = (walletById(fromId) || { symbol: "" }).symbol;
+          btn.title =
+            "Transfer entire balance: " + sym + Math.abs(bal).toFixed(2);
+        }
+      }
+      function fillAllBalance() {
+        const fromId = document.getElementById("tm-from").value;
+        const wTxs = txs.filter((t) => t.walletId === fromId);
+        const bal =
+          wTxs
+            .filter((t) => t.type === "income")
+            .reduce((s, t) => s + t.amount, 0) -
+          wTxs
+            .filter((t) => t.type === "expense")
+            .reduce((s, t) => s + t.amount, 0);
+        if (bal <= 0) {
+          sfx.err();
+          showToast("ERR: NOTHING_TO_TRANSFER", "err");
+          return;
+        }
+        document.getElementById("tm-amount").value = bal.toFixed(2);
+        sfx.click();
+      }
+
+      /* ── TRANSFER MODAL ── */
+      function openTransferModal() {
+        if (wallets.length < 2) {
+          sfx.err();
+          showToast("ERR: NEED_2+_WALLETS", "err");
+          return;
+        }
+        sfx.click();
+        const fromSel = document.getElementById("tm-from");
+        const toSel = document.getElementById("tm-to");
+        fromSel.innerHTML = wallets
+          .map(
+            (w) =>
+              `<option value="${w.id}"${w.id === currentWalletId ? " selected" : ""}>${w.symbol} ${w.name}</option>`,
+          )
+          .join("");
+        toSel.innerHTML = wallets
+          .map(
+            (w) =>
+              `<option value="${w.id}"${w.id !== currentWalletId ? " selected" : ""}>${w.symbol} ${w.name}</option>`,
+          )
+          .join("");
+        document.getElementById("tm-amount").value = "";
+        document.getElementById("tm-date").value = today;
+        document.getElementById("tm-memo").value = "";
+        document.getElementById("transfer-modal").classList.add("open");
+        updateTransferAll();
+      }
+      function closeTransferModal() {
+        document.getElementById("transfer-modal").classList.remove("open");
+      }
+      function executeTransfer() {
+        const fromId = document.getElementById("tm-from").value;
+        const toId = document.getElementById("tm-to").value;
+        const rawVal = document
+          .getElementById("tm-amount")
+          .value.replace(/,/g, "");
+        const amount = parseFloat(rawVal);
+        const date = document.getElementById("tm-date").value || today;
+        const memo = document.getElementById("tm-memo").value.trim();
+
+        if (fromId === toId) {
+          sfx.err();
+          showToast("ERR: SAME_WALLET", "err");
+          return;
+        }
+        if (isNaN(amount) || amount <= 0) {
+          sfx.err();
+          document.getElementById("tm-amount").style.borderColor = "var(--red)";
+          setTimeout(
+            () => (document.getElementById("tm-amount").style.borderColor = ""),
+            1200,
+          );
+          return;
+        }
+        sfx.add();
+        const xferId = "xf" + Date.now();
+        const fromW = walletById(fromId),
+          toW = walletById(toId);
+        const time = new Date().toLocaleTimeString("en-GB", { hour12: false });
+        txs.push({
+          id: xferId + "_out",
+          walletId: fromId,
+          type: "expense",
+          cat: "TRNZ",
+          title: "→ " + toW.name,
+          amount,
+          date,
+          time,
+          comment: memo || "TRANSFER TO " + toW.name,
+          transferId: xferId,
+          transferTo: toId,
+        });
+        txs.push({
+          id: xferId + "_in",
+          walletId: toId,
+          type: "income",
+          cat: "TRNZ",
+          title: "← " + fromW.name,
+          amount,
+          date,
+          time,
+          comment: memo || "TRANSFER FROM " + fromW.name,
+          transferId: xferId,
+          transferFrom: fromId,
+        });
+        save();
+        updateSummary(true);
+        renderLog();
+        closeTransferModal();
+        showToast("TRANSFER_OK // " + fmtCompact(amount, fromW.symbol), "ok");
+      }
+
       /* ── SUMMARY ── */
       let prevBal = 0;
       function updateSummary(anim = false) {
-        const inc = txs
+        const wTxs = txs.filter((t) => t.walletId === currentWalletId);
+        const inc = wTxs
           .filter((t) => t.type === "income")
           .reduce((s, t) => s + t.amount, 0);
-        const exp = txs
+        const exp = wTxs
           .filter((t) => t.type === "expense")
           .reduce((s, t) => s + t.amount, 0);
         const bal = inc - exp;
@@ -1646,9 +2708,6 @@
         fsEl.classList.remove("open");
         document.body.style.overflow = "";
       }
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeFsBalance();
-      });
 
       /* ── BALANCE TOOLTIP ── */
       const balEl = document.getElementById("balance");
@@ -1722,7 +2781,9 @@
       }
       function renderLog() {
         const q = document.getElementById("search").value.toLowerCase().trim();
-        let list = [...txs].reverse();
+        let list = [...txs]
+          .filter((t) => t.walletId === currentWalletId)
+          .reverse();
         if (filter !== "all") list = list.filter((t) => t.type === filter);
         if (q)
           list = list.filter(
@@ -1736,6 +2797,7 @@
             '<div class="log-empty">// NO_RECORDS_FOUND &nbsp;// QUERY RETURNED NULL //</div>';
           return;
         }
+        const wSym = curWallet().symbol;
         const groups = groupByDate(list);
         const dates = Object.keys(groups).sort((a, b) => b.localeCompare(a));
         log.innerHTML = dates
@@ -1744,23 +2806,30 @@
     <div class="sh">${dateLabel(date)}</div>
     <div class="tx-list">
       ${groups[date]
-        .map(
-          (t) => `
-        <div class="tx ${t.type}">
+        .map((t) => {
+          const isXfer = !!t.transferId;
+          const xferW = isXfer
+            ? t.transferTo
+              ? walletById(t.transferTo)
+              : walletById(t.transferFrom)
+            : null;
+          return `
+        <div class="tx ${t.type}${isXfer ? " transfer" : ""}">
           <div class="tx-cat">${catIcon(t.cat)}</div>
           <div class="tx-info">
             <div class="tx-ttl">${esc(t.title)}</div>
             <div class="tx-meta">${t.comment ? esc(t.comment) : t.type.toUpperCase()}</div>
           </div>
+          ${isXfer && xferW ? `<span class="tx-xfer">${esc(xferW.symbol)} ${esc(xferW.name)}</span>` : ""}
           <div class="tx-r">
-            <div class="tx-amt ${t.type}">${fmtS(t.amount, t.type)}</div>
+            <div class="tx-amt ${t.type}">${fmtS(t.amount, t.type, wSym)}</div>
             <div class="tx-dt">${t.date}${t.time ? ' &nbsp;<span style="color:var(--cyan);opacity:.5">' + t.time + "</span>" : ""}</div>
           </div>
           <button class="bdel" onclick="deleteTx('${t.id}')">
             <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 1.5l8 8M9.5 1.5l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           </button>
-        </div>`,
-        )
+        </div>`;
+        })
         .join("")}
     </div>`,
           )
@@ -1787,6 +2856,7 @@
         sfx.add();
         txs.push({
           id: Date.now().toString(),
+          walletId: currentWalletId,
           title,
           amount,
           type: txType,
@@ -1808,13 +2878,26 @@
       /* ── DELETE ── */
       function deleteTx(id) {
         sfx.del();
-        txs = txs.filter((t) => t.id !== id);
+        const tx = txs.find((t) => t.id === id);
+        if (tx && tx.transferId) {
+          // delete both legs of a transfer
+          txs = txs.filter((t) => t.transferId !== tx.transferId);
+        } else {
+          txs = txs.filter((t) => t.id !== id);
+        }
         save();
         updateSummary(true);
         renderLog();
       }
 
       document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          closeWalletCtx();
+          closeWalletModal();
+          closeEditWalletModal();
+          closeTransferModal();
+          closeFsBalance();
+        }
         if (
           e.key === "Enter" &&
           ["f-title", "f-amount", "f-comment"].includes(e.target.id)
@@ -1827,7 +2910,8 @@
         return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
       }
       function exportCSV() {
-        if (!txs.length) {
+        const wTxs = txs.filter((t) => t.walletId === currentWalletId);
+        if (!wTxs.length) {
           sfx.err();
           showToast("ERR: LEDGER_EMPTY", "err");
           return;
@@ -1835,6 +2919,7 @@
         sfx.export();
         const hdr = [
           "id",
+          "walletId",
           "date",
           "type",
           "category",
@@ -1842,8 +2927,9 @@
           "amount",
           "comment",
         ];
-        const rows = txs.map((t) => [
+        const rows = wTxs.map((t) => [
           t.id,
+          t.walletId || "",
           t.date,
           t.type,
           t.cat,
@@ -1858,11 +2944,26 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "void_wallet_" + today + ".csv";
+        a.download = "void_wallet_" + curWallet().name + "_" + today + ".csv";
         a.click();
         URL.revokeObjectURL(url);
-        showToast("EXPORT_OK // " + txs.length + " RECORDS", "ok");
+        showToast("EXPORT_OK // " + wTxs.length + " RECORDS", "ok");
       }
+
+      /* outside-click to close modals */
+      document
+        .getElementById("edit-wallet-modal")
+        .addEventListener("click", (e) => {
+          if (e.target === e.currentTarget) closeEditWalletModal();
+        });
+      document.getElementById("wallet-modal").addEventListener("click", (e) => {
+        if (e.target === e.currentTarget) closeWalletModal();
+      });
+      document
+        .getElementById("transfer-modal")
+        .addEventListener("click", (e) => {
+          if (e.target === e.currentTarget) closeTransferModal();
+        });
 
       /* ── IMPORT ── */
       function importCSV(e) {
@@ -2065,7 +3166,92 @@
         document.getElementById("favicon").href = c.toDataURL("image/png");
       })();
 
+      /* ── CURRENCY PICKER ── */
+      const CURRENCIES = {
+        FIAT: [
+          { sym: "$", code: "USD" },
+          { sym: "€", code: "EUR" },
+          { sym: "£", code: "GBP" },
+          { sym: "¥", code: "JPY" },
+          { sym: "¥", code: "CNY" },
+          { sym: "₽", code: "RUB" },
+          { sym: "₹", code: "INR" },
+          { sym: "₩", code: "KRW" },
+          { sym: "₣", code: "CHF" },
+          { sym: "A$", code: "AUD" },
+          { sym: "C$", code: "CAD" },
+          { sym: "R$", code: "BRL" },
+        ],
+        CRYPTO: [
+          { sym: "₿", code: "BTC" },
+          { sym: "Ξ", code: "ETH" },
+          { sym: "◎", code: "SOL" },
+          { sym: "XMR", code: "XMR" },
+          { sym: "LTC", code: "LTC" },
+          { sym: "ADA", code: "ADA" },
+          { sym: "DOT", code: "DOT" },
+          { sym: "BNB", code: "BNB" },
+          { sym: "TON", code: "TON" },
+          { sym: "TRX", code: "TRX" },
+          { sym: "XRP", code: "XRP" },
+          { sym: "USDT", code: "USDT" },
+        ],
+      };
+
+      function buildCurList(prefix) {
+        const el = document.getElementById(prefix + "-cur-list");
+        el.innerHTML =
+          `<div class="cur-sec">// FIAT</div><div class="cur-grid">` +
+          CURRENCIES.FIAT.map(
+            (c) => `
+      <div class="cur-opt" onclick="pickCurrency('${prefix}','${c.sym}')">
+        <span class="cur-sym">${c.sym}</span>
+        <span class="cur-code">${c.code}</span>
+      </div>`,
+          ).join("") +
+          `</div><div class="cur-sec">// CRYPTO</div><div class="cur-grid">` +
+          CURRENCIES.CRYPTO.map(
+            (c) => `
+      <div class="cur-opt" onclick="pickCurrency('${prefix}','${c.sym}')">
+        <span class="cur-sym" style="font-size:${c.sym.length > 2 ? "9px" : "12px"}">${c.sym}</span>
+        <span class="cur-code">${c.code}</span>
+      </div>`,
+          ).join("") +
+          `</div>`;
+      }
+
+      function toggleCurPick(prefix) {
+        sfx.click();
+        const wrap = document.getElementById(prefix + "-cur-pick");
+        const isOpen = wrap.classList.contains("open");
+        // close all
+        document
+          .querySelectorAll(".cur-pick.open")
+          .forEach((el) => el.classList.remove("open"));
+        if (!isOpen) {
+          buildCurList(prefix);
+          wrap.classList.add("open");
+          setTimeout(
+            () =>
+              document.addEventListener("click", function onOut(e) {
+                if (!wrap.contains(e.target)) {
+                  wrap.classList.remove("open");
+                  document.removeEventListener("click", onOut);
+                }
+              }),
+            0,
+          );
+        }
+      }
+
+      function pickCurrency(prefix, sym) {
+        sfx.click();
+        document.getElementById(prefix + "-sym").value = sym;
+        document.getElementById(prefix + "-cur-pick").classList.remove("open");
+      }
+
       /* ── INIT ── */
+      renderWalletBar();
       updateSummary();
       renderLog();
     </script>
