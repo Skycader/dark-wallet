@@ -1,0 +1,2073 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VOID_WALLET</title>
+    <link rel="icon" id="favicon" type="image/png" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      :root {
+        --bg: #050508;
+        --bg2: #080810;
+        --panel: #0c0c14;
+        --panel2: #10101a;
+        --cyan: #00f5ff;
+        --cyan-d: rgba(0, 245, 255, 0.1);
+        --cyan-g: rgba(0, 245, 255, 0.28);
+        --pink: #ff2d78;
+        --pink-d: rgba(255, 45, 120, 0.1);
+        --green: #00ff9d;
+        --green-d: rgba(0, 255, 157, 0.1);
+        --red: #ff3355;
+        --red-d: rgba(255, 51, 85, 0.12);
+        --text: #b8cfe0;
+        --muted: #3a4a5a;
+        --faint: #1a1a28;
+        --bdr: rgba(0, 245, 255, 0.14);
+        --bdr2: rgba(0, 245, 255, 0.26);
+      }
+      body {
+        font-family: "Share Tech Mono", monospace;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 2rem 1rem 5rem;
+        overflow-x: hidden;
+      }
+      /* scanlines */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 9999;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.13) 2px,
+          rgba(0, 0, 0, 0.13) 4px
+        );
+      }
+      /* grid */
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background-image:
+          linear-gradient(rgba(0, 245, 255, 0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0, 245, 255, 0.025) 1px, transparent 1px);
+        background-size: 48px 48px;
+      }
+      .wrap {
+        max-width: 740px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* HEADER */
+      header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+      .sys-id {
+        font-size: 9px;
+        color: var(--muted);
+        letter-spacing: 0.22em;
+        margin-bottom: 8px;
+      }
+      .hdr-rule {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 6px;
+      }
+      .hdr-rule::before,
+      .hdr-rule::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+      }
+      .hdr-rule::before {
+        background: linear-gradient(90deg, transparent, var(--cyan));
+      }
+      .hdr-rule::after {
+        background: linear-gradient(90deg, var(--cyan), transparent);
+      }
+      .app-title {
+        font-family: "Orbitron", sans-serif;
+        font-size: clamp(1.4rem, 5vw, 2.2rem);
+        font-weight: 900;
+        letter-spacing: 0.1em;
+        color: var(--cyan);
+        text-shadow:
+          0 0 24px var(--cyan-g),
+          0 0 80px rgba(0, 245, 255, 0.12);
+        animation: flicker 9s infinite;
+      }
+      @keyframes flicker {
+        0%,
+        95%,
+        100% {
+          opacity: 1;
+        }
+        96% {
+          opacity: 0.55;
+        }
+        97.5% {
+          opacity: 1;
+        }
+        98.5% {
+          opacity: 0.7;
+        }
+        99% {
+          opacity: 1;
+        }
+      }
+      .app-sub {
+        font-size: 9px;
+        color: var(--muted);
+        letter-spacing: 0.2em;
+        margin-top: 5px;
+      }
+
+      /* STATUS BAR */
+      .status-bar {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 9px;
+        color: var(--muted);
+        letter-spacing: 0.14em;
+        margin-bottom: 1.25rem;
+        padding: 7px 12px;
+        border: 1px solid var(--faint);
+        border-radius: 2px;
+        background: var(--panel);
+      }
+      .sdot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--green);
+        flex-shrink: 0;
+        animation: blink 2s infinite;
+      }
+      @keyframes blink {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(0, 255, 157, 0.5);
+        }
+        50% {
+          box-shadow: 0 0 0 4px rgba(0, 255, 157, 0);
+        }
+      }
+      .status-bar span {
+        color: var(--text);
+      }
+      .sep {
+        color: var(--faint) !important;
+        margin: 0 1px;
+      }
+
+      /* BALANCE */
+      .balance-card {
+        background: var(--panel);
+        border: 1px solid var(--bdr2);
+        border-radius: 3px;
+        padding: 2.5rem 2rem 2rem;
+        margin-bottom: 1rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .balance-card::before {
+        content: "";
+        position: absolute;
+        top: -100px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 420px;
+        height: 420px;
+        pointer-events: none;
+        background: radial-gradient(
+          circle,
+          rgba(0, 245, 255, 0.07) 0%,
+          transparent 65%
+        );
+      }
+      .balance-card::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--cyan),
+          transparent
+        );
+        animation: sweep 5s linear infinite;
+      }
+      @keyframes sweep {
+        0% {
+          transform: scaleX(0);
+          transform-origin: left;
+        }
+        49% {
+          transform: scaleX(1);
+          transform-origin: left;
+        }
+        50% {
+          transform: scaleX(1);
+          transform-origin: right;
+        }
+        100% {
+          transform: scaleX(0);
+          transform-origin: right;
+        }
+      }
+      .c {
+        position: absolute;
+        width: 14px;
+        height: 14px;
+        border-color: var(--cyan);
+        border-style: solid;
+        opacity: 0.45;
+      }
+      .c.tl {
+        top: 10px;
+        left: 10px;
+        border-width: 2px 0 0 2px;
+      }
+      .c.tr {
+        top: 10px;
+        right: 10px;
+        border-width: 2px 2px 0 0;
+      }
+      .c.bl {
+        bottom: 10px;
+        left: 10px;
+        border-width: 0 0 2px 2px;
+      }
+      .c.br {
+        bottom: 10px;
+        right: 10px;
+        border-width: 0 2px 2px 0;
+      }
+
+      .blbl {
+        font-size: 9px;
+        letter-spacing: 0.28em;
+        color: var(--muted);
+        margin-bottom: 1rem;
+      }
+      .balance-amount {
+        font-family: "Orbitron", sans-serif;
+        font-size: clamp(2.6rem, 9vw, 5rem);
+        font-weight: 900;
+        color: var(--cyan);
+        line-height: 1;
+        letter-spacing: -0.02em;
+        text-shadow:
+          0 0 28px var(--cyan-g),
+          0 0 70px rgba(0, 245, 255, 0.1);
+        transition: color 0.35s;
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+      }
+      .balance-amount.neg {
+        color: var(--red);
+        text-shadow: 0 0 28px rgba(255, 51, 85, 0.45);
+      }
+      .glitch {
+        animation: glitchAnim 0.45s steps(1);
+      }
+      @keyframes glitchAnim {
+        0% {
+          clip-path: inset(0 0 85% 0);
+          transform: translateX(-5px);
+          filter: hue-rotate(90deg);
+        }
+        15% {
+          clip-path: inset(15% 0 45% 0);
+          transform: translateX(4px);
+        }
+        30% {
+          clip-path: inset(55% 0 15% 0);
+          transform: translateX(-3px);
+          filter: hue-rotate(180deg);
+        }
+        50% {
+          clip-path: inset(25% 0 55% 0);
+          transform: translateX(2px);
+        }
+        70% {
+          clip-path: inset(70% 0 5% 0);
+          transform: translateX(-1px);
+        }
+        85% {
+          clip-path: inset(5% 0 75% 0);
+          transform: none;
+          filter: none;
+        }
+        100% {
+          clip-path: none;
+          transform: none;
+          filter: none;
+        }
+      }
+      .sub-row {
+        display: flex;
+        justify-content: center;
+        gap: 3rem;
+        margin-top: 1.75rem;
+      }
+      .sub-lbl {
+        font-size: 9px;
+        letter-spacing: 0.2em;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+      .sub-val {
+        font-family: "Orbitron", sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+      }
+      .sub-val.inc {
+        color: var(--green);
+        text-shadow: 0 0 12px rgba(0, 255, 157, 0.4);
+      }
+      .sub-val.exp {
+        color: var(--pink);
+        text-shadow: 0 0 12px rgba(255, 45, 120, 0.4);
+      }
+
+      /* FORM */
+      .form-card {
+        background: var(--panel);
+        border: 1px solid var(--bdr);
+        border-radius: 3px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        position: relative;
+        overflow: visible;
+        z-index: 1;
+      }
+      .form-card::before {
+        content: "// NEW_TRANSACTION";
+        position: absolute;
+        top: -1px;
+        left: 14px;
+        font-size: 9px;
+        letter-spacing: 0.2em;
+        color: var(--cyan);
+        background: var(--panel);
+        padding: 0 8px;
+        opacity: 0.65;
+      }
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .form-row.s {
+        grid-template-columns: 1fr;
+      }
+      .form-row.t {
+        grid-template-columns: 1fr 1fr 1fr;
+      }
+      label {
+        display: block;
+        font-size: 9px;
+        color: var(--muted);
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+      }
+      input,
+      select {
+        width: 100%;
+        background: var(--bg2);
+        border: 1px solid var(--faint);
+        border-radius: 2px;
+        color: var(--text);
+        font-family: "Share Tech Mono", monospace;
+        font-size: 13px;
+        padding: 9px 11px;
+        outline: none;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+        appearance: none;
+      }
+      input:focus,
+      select:focus {
+        border-color: var(--cyan);
+        box-shadow:
+          0 0 0 1px rgba(0, 245, 255, 0.12),
+          inset 0 0 10px rgba(0, 245, 255, 0.03);
+      }
+      select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2300f5ff' stroke-width='1.3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 11px center;
+        padding-right: 28px;
+        cursor: pointer;
+      }
+      input[type="date"]::-webkit-calendar-picker-indicator {
+        filter: invert(0.45) sepia(1) saturate(5) hue-rotate(155deg);
+        cursor: pointer;
+      }
+
+      .type-toggle {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border: 1px solid var(--faint);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      .tbtn {
+        padding: 9px 0;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 11px;
+        cursor: pointer;
+        border: none;
+        background: var(--bg2);
+        color: var(--muted);
+        letter-spacing: 0.1em;
+        transition: all 0.15s;
+        text-align: center;
+      }
+      .tbtn.ai {
+        background: var(--green-d);
+        color: var(--green);
+        box-shadow: inset 0 -2px 0 var(--green);
+      }
+      .tbtn.ae {
+        background: var(--pink-d);
+        color: var(--pink);
+        box-shadow: inset 0 -2px 0 var(--pink);
+      }
+      .tbtn:hover:not(.ai):not(.ae) {
+        background: var(--panel2);
+        color: var(--text);
+      }
+
+      .btn-add {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--cyan);
+        border-radius: 2px;
+        font-family: "Orbitron", sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        cursor: pointer;
+        background: transparent;
+        color: var(--muted);
+        border-color: var(--faint);
+        text-transform: uppercase;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.2s;
+        z-index: 0;
+      }
+      .btn-add::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(0, 245, 255, 0.18),
+          transparent
+        );
+        transition: left 0.45s;
+      }
+      .btn-add:hover {
+        background: var(--cyan-d);
+        color: var(--cyan);
+        border-color: var(--cyan);
+        box-shadow: 0 0 22px var(--cyan-g);
+      }
+      .btn-add:hover::after {
+        left: 100%;
+      }
+      .btn-add:active {
+        transform: scale(0.99);
+      }
+
+      /* IO + CONTROLS */
+      .io-bar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 1rem;
+        justify-content: flex-end;
+      }
+      #csv-import-input {
+        display: none;
+      }
+      .btn-io {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 13px;
+        border-radius: 2px;
+        border: 1px solid var(--faint);
+        background: var(--panel);
+        color: var(--muted);
+        font-family: "Share Tech Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        cursor: pointer;
+        transition: all 0.15s;
+        text-transform: uppercase;
+      }
+      .btn-io:hover {
+        color: var(--cyan);
+        border-color: var(--cyan);
+        background: var(--cyan-d);
+      }
+
+      .log-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+      }
+      .tab-group {
+        display: flex;
+        border: 1px solid var(--faint);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      .tab {
+        padding: 7px 14px;
+        font-size: 10px;
+        font-family: "Share Tech Mono", monospace;
+        letter-spacing: 0.1em;
+        cursor: pointer;
+        border: none;
+        background: var(--panel);
+        color: var(--muted);
+        transition: all 0.15s;
+        border-right: 1px solid var(--faint);
+        text-transform: uppercase;
+      }
+      .tab:last-child {
+        border-right: none;
+      }
+      .tab.active {
+        background: var(--cyan-d);
+        color: var(--cyan);
+      }
+      .tab:hover:not(.active) {
+        color: var(--text);
+        background: var(--panel2);
+      }
+      .srch {
+        flex: 1;
+        min-width: 160px;
+        position: relative;
+      }
+      .srch input {
+        padding-left: 30px;
+        font-size: 12px;
+      }
+      .si {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 13px;
+        height: 13px;
+        opacity: 0.3;
+        pointer-events: none;
+      }
+      .amt-wrap {
+        position: relative;
+      }
+      .amt-wrap::before {
+        content: "$";
+        position: absolute;
+        left: 11px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--cyan);
+        font-family: "Share Tech Mono", monospace;
+        font-size: 14px;
+        pointer-events: none;
+        z-index: 1;
+        opacity: 0.65;
+      }
+      .amt-wrap input {
+        padding-left: 22px;
+        letter-spacing: 0.07em;
+        font-size: 14px;
+      }
+
+      /* balance tooltip */
+      .bal-tooltip {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%) translateY(-4px);
+        top: calc(100% + 12px);
+        background: var(--panel2);
+        border: 1px solid var(--cyan);
+        border-radius: 2px;
+        padding: 7px 18px;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 13px;
+        color: var(--cyan);
+        letter-spacing: 0.1em;
+        white-space: nowrap;
+        pointer-events: none;
+        opacity: 0;
+        transition:
+          opacity 0.18s,
+          transform 0.18s;
+        box-shadow: 0 0 20px rgba(0, 245, 255, 0.2);
+        z-index: 10;
+      }
+      .bal-tooltip::before {
+        content: "";
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 5px solid transparent;
+        border-bottom-color: var(--cyan);
+      }
+      .bal-tooltip.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+
+      /* LOG */
+      .sh {
+        font-size: 9px;
+        letter-spacing: 0.22em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin: 1.25rem 0 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .sh::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--faint);
+      }
+      .log-empty {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        border: 1px dashed var(--faint);
+        border-radius: 2px;
+      }
+      .tx-list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .tx {
+        background: var(--panel);
+        border: 1px solid var(--faint);
+        border-radius: 2px;
+        padding: 11px 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+        overflow: hidden;
+        cursor: default;
+        animation: txIn 0.22s ease;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
+      }
+      .tx::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+      }
+      .tx.income::before {
+        background: var(--green);
+      }
+      .tx.expense::before {
+        background: var(--pink);
+      }
+      .tx:hover {
+        border-color: var(--bdr);
+        background: var(--panel2);
+      }
+      @keyframes txIn {
+        from {
+          opacity: 0;
+          transform: translateX(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .tx-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .tx-ttl {
+        font-size: 13px;
+        color: var(--text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .tx-meta {
+        font-size: 10px;
+        color: var(--muted);
+        margin-top: 2px;
+        letter-spacing: 0.05em;
+      }
+      .tx-r {
+        text-align: right;
+        flex-shrink: 0;
+      }
+      .tx-amt {
+        font-family: "Orbitron", sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .tx-amt.income {
+        color: var(--green);
+      }
+      .tx-amt.expense {
+        color: var(--pink);
+      }
+      .tx-dt {
+        font-size: 9px;
+        color: var(--muted);
+        margin-top: 2px;
+        letter-spacing: 0.1em;
+      }
+      .bdel {
+        background: none;
+        border: 1px solid transparent;
+        cursor: pointer;
+        color: var(--muted);
+        width: 26px;
+        height: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 2px;
+        transition: all 0.15s;
+        flex-shrink: 0;
+      }
+      .bdel:hover {
+        border-color: var(--red-d);
+        background: var(--red-d);
+        color: var(--red);
+      }
+
+      /* TOAST */
+      .toast {
+        position: fixed;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%) translateY(18px);
+        background: var(--panel);
+        border: 1px solid var(--bdr2);
+        color: var(--cyan);
+        font-family: "Share Tech Mono", monospace;
+        font-size: 10px;
+        padding: 10px 18px;
+        border-radius: 2px;
+        opacity: 0;
+        letter-spacing: 0.12em;
+        transition:
+          opacity 0.2s,
+          transform 0.2s;
+        pointer-events: none;
+        white-space: nowrap;
+        z-index: 9998;
+        text-transform: uppercase;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      .toast.ok {
+        border-color: var(--green);
+        color: var(--green);
+        box-shadow: 0 0 18px rgba(0, 255, 157, 0.15);
+      }
+      .toast.err {
+        border-color: var(--red);
+        color: var(--red);
+        box-shadow: 0 0 18px rgba(255, 51, 85, 0.15);
+      }
+
+      .toast.ok {
+        border-color: var(--green);
+        color: var(--green);
+        box-shadow: 0 0 18px rgba(0, 255, 157, 0.15);
+      }
+      .toast.err {
+        border-color: var(--red);
+        color: var(--red);
+        box-shadow: 0 0 18px rgba(255, 51, 85, 0.15);
+      }
+
+      /* FULLSCREEN BALANCE */
+      .bal-fs {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: #050508;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s;
+      }
+      .bal-fs.open {
+        opacity: 1;
+        pointer-events: all;
+      }
+      .bal-fs::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(0, 245, 255, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0, 245, 255, 0.03) 1px, transparent 1px);
+        background-size: 48px 48px;
+      }
+      .bal-fs::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.12) 2px,
+          rgba(0, 0, 0, 0.12) 4px
+        );
+        pointer-events: none;
+      }
+      .bal-fs-inner {
+        text-align: center;
+        position: relative;
+        z-index: 1;
+      }
+      .bal-fs-label {
+        font-family: "Share Tech Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.28em;
+        color: var(--muted);
+        margin-bottom: 1.5rem;
+      }
+      .bal-fs-num {
+        font-family: "Orbitron", sans-serif;
+        font-size: clamp(2rem, 8vw, 6rem);
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+        word-break: break-all;
+        padding: 0 2rem;
+        transition: color 0.3s;
+      }
+      .bal-fs-num.pos {
+        color: var(--green);
+        text-shadow:
+          0 0 40px rgba(0, 255, 157, 0.35),
+          0 0 100px rgba(0, 255, 157, 0.12);
+      }
+      .bal-fs-num.neg {
+        color: var(--red);
+        text-shadow:
+          0 0 40px rgba(255, 51, 85, 0.35),
+          0 0 100px rgba(255, 51, 85, 0.12);
+      }
+      .bal-fs-hint {
+        font-family: "Share Tech Mono", monospace;
+        font-size: 9px;
+        letter-spacing: 0.22em;
+        color: var(--muted);
+        margin-top: 2.5rem;
+        animation: blink 1.8s step-end infinite;
+      }
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0;
+        }
+      }
+
+      /* CAT ICON */
+      .tx-cat {
+        width: 32px;
+        height: 32px;
+        border-radius: 2px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--faint);
+        background: var(--bg2);
+      }
+      .cat-ico {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* CUSTOM CAT DROPDOWN */
+      .cat-drop {
+        position: relative;
+        user-select: none;
+        z-index: 10;
+      }
+      .cat-drop-sel {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--bg2);
+        border: 1px solid var(--faint);
+        border-radius: 2px;
+        padding: 9px 10px;
+        cursor: pointer;
+        transition: border-color 0.2s;
+        min-height: 38px;
+      }
+      .cat-drop-sel:hover,
+      .cat-drop.open .cat-drop-sel {
+        border-color: var(--cyan);
+      }
+      .cat-drop.open .cat-drop-sel {
+        box-shadow: 0 0 0 1px rgba(0, 245, 255, 0.12);
+      }
+      .cat-drop-ico {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        color: var(--muted);
+      }
+      .cat-drop-lbl {
+        flex: 1;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 11px;
+        color: var(--text);
+        letter-spacing: 0.08em;
+      }
+      .cat-drop-arr {
+        flex-shrink: 0;
+        color: var(--cyan);
+        opacity: 0.6;
+        transition: transform 0.18s;
+      }
+      .cat-drop.open .cat-drop-arr {
+        transform: rotate(180deg);
+      }
+      .cat-drop-list {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: auto;
+        right: 0;
+        min-width: 180px;
+        width: max-content;
+        background: var(--panel2);
+        border: 1px solid var(--cyan);
+        border-radius: 2px;
+        z-index: 1000;
+        max-height: 240px;
+        overflow-y: auto;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-4px);
+        transition:
+          opacity 0.15s,
+          transform 0.15s;
+        box-shadow:
+          0 8px 24px rgba(0, 0, 0, 0.6),
+          0 0 20px rgba(0, 245, 255, 0.08);
+      }
+      .cat-drop-list::-webkit-scrollbar {
+        width: 4px;
+      }
+      .cat-drop-list::-webkit-scrollbar-track {
+        background: var(--panel);
+      }
+      .cat-drop-list::-webkit-scrollbar-thumb {
+        background: var(--cyan);
+        opacity: 0.3;
+        border-radius: 2px;
+      }
+      .cat-drop.open .cat-drop-list {
+        opacity: 1;
+        pointer-events: all;
+        transform: translateY(0);
+      }
+      .cat-opt {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 12px;
+        cursor: pointer;
+        transition: background 0.12s;
+        border-bottom: 1px solid var(--faint);
+      }
+      .cat-opt:last-child {
+        border-bottom: none;
+      }
+      .cat-opt:hover {
+        background: var(--cyan-d);
+      }
+      .cat-opt.active {
+        background: rgba(0, 245, 255, 0.06);
+      }
+      .cat-opt-ico {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        color: var(--muted);
+      }
+      .cat-opt:hover .cat-opt-ico,
+      .cat-opt.active .cat-opt-ico {
+        color: var(--cyan);
+      }
+      .cat-opt-lbl {
+        font-family: "Share Tech Mono", monospace;
+        font-size: 11px;
+        color: var(--muted);
+        letter-spacing: 0.1em;
+      }
+      .cat-opt:hover .cat-opt-lbl,
+      .cat-opt.active .cat-opt-lbl {
+        color: var(--text);
+      }
+
+      @media (max-width: 480px) {
+        .form-row {
+          grid-template-columns: 1fr;
+        }
+        .form-row.t {
+          grid-template-columns: 1fr 1fr;
+        }
+        .sub-row {
+          gap: 1.5rem;
+        }
+        .io-bar {
+          justify-content: stretch;
+        }
+        .btn-io {
+          flex: 1;
+          justify-content: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="sys-id">// SYS_ID: VW-7741-ALPHA // NODE: ENCRYPTED //</div>
+        <div class="hdr-rule"><div class="app-title">VOID_WALLET</div></div>
+        <div class="app-sub">DARKNET FINANCIAL TERMINAL &nbsp;v3.3.1</div>
+      </header>
+
+      <div class="status-bar">
+        <div class="sdot"></div>
+        <span>NODE_OK</span><span class="sep">|</span> ENC: AES-256<span
+          class="sep"
+          >|</span
+        >
+        PROXY: <span>TOR_ACTIVE</span><span class="sep">|</span> TX:
+        <span id="tx-count">0</span><span class="sep">|</span>
+        <span id="liveclock">--:--:--</span>
+      </div>
+
+      <div class="balance-card">
+        <div class="c tl"></div>
+        <div class="c tr"></div>
+        <div class="c bl"></div>
+        <div class="c br"></div>
+        <div class="blbl">// CURRENT BALANCE //</div>
+        <div class="balance-amount" id="balance" onclick="openFsBalance()">
+          $0.00
+        </div>
+        <div class="bal-tooltip" id="bal-tooltip"></div>
+        <div class="sub-row">
+          <div>
+            <div class="sub-lbl">▲ INFLOW</div>
+            <div class="sub-val inc" id="total-income">$0.00</div>
+          </div>
+          <div>
+            <div class="sub-lbl">▼ OUTFLOW</div>
+            <div class="sub-val exp" id="total-expense">$0.00</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-row">
+          <div>
+            <label>Label / Target</label
+            ><input
+              type="text"
+              id="f-title"
+              placeholder="e.g. salary_deposit..."
+            />
+          </div>
+          <div>
+            <label>Amount ($)</label>
+            <div class="amt-wrap">
+              <input
+                type="text"
+                id="f-amount"
+                placeholder="0.00"
+                inputmode="decimal"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label>Type</label>
+            <div class="type-toggle">
+              <button class="tbtn ai" id="btn-inc" onclick="setType('income')">
+                ▲ INFLOW
+              </button>
+              <button class="tbtn" id="btn-exp" onclick="setType('expense')">
+                ▼ OUTFLOW
+              </button>
+            </div>
+          </div>
+          <div><label>Date</label><input type="date" id="f-date" /></div>
+        </div>
+        <div class="form-row t" style="margin-bottom: 14px">
+          <div style="grid-column: span 2">
+            <label>Memo / Note</label
+            ><input
+              type="text"
+              id="f-comment"
+              placeholder="encrypted note..."
+            />
+          </div>
+          <div>
+            <label>Tag</label>
+            <div class="cat-drop" id="cat-drop">
+              <div
+                class="cat-drop-sel"
+                id="cat-drop-sel"
+                onclick="toggleCatDrop()"
+              >
+                <span class="cat-drop-ico" id="cat-drop-ico"></span>
+                <span class="cat-drop-lbl" id="cat-drop-lbl">// MISC</span>
+                <svg
+                  class="cat-drop-arr"
+                  width="10"
+                  height="7"
+                  viewBox="0 0 10 7"
+                  fill="none"
+                >
+                  <path
+                    d="M1 1l4 4 4-4"
+                    stroke="currentColor"
+                    stroke-width="1.3"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </div>
+              <div class="cat-drop-list" id="cat-drop-list"></div>
+            </div>
+          </div>
+        </div>
+        <button class="btn-add" onclick="addTransaction()">
+          [ EXECUTE_TRANSACTION ]
+        </button>
+      </div>
+
+      <div class="io-bar">
+        <input
+          type="file"
+          id="csv-import-input"
+          accept=".csv"
+          onchange="importCSV(event)"
+        />
+        <button
+          class="btn-io"
+          onclick="document.getElementById('csv-import-input').click()"
+        >
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+            <path
+              d="M5.5 7V1M3 5l2.5 2L8 5"
+              stroke="currentColor"
+              stroke-width="1.3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M1 9.5h9"
+              stroke="currentColor"
+              stroke-width="1.3"
+              stroke-linecap="round"
+            />
+          </svg>
+          IMPORT_CSV
+        </button>
+        <button class="btn-io" onclick="exportCSV()">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+            <path
+              d="M5.5 1v6M3 3l2.5-2L8 3"
+              stroke="currentColor"
+              stroke-width="1.3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M1 9.5h9"
+              stroke="currentColor"
+              stroke-width="1.3"
+              stroke-linecap="round"
+            />
+          </svg>
+          EXPORT_CSV
+        </button>
+      </div>
+
+      <div class="log-controls">
+        <div class="tab-group">
+          <button
+            class="tab active"
+            data-filter="all"
+            onclick="setFilter(this)"
+          >
+            ALL
+          </button>
+          <button class="tab" data-filter="income" onclick="setFilter(this)">
+            INFLOW
+          </button>
+          <button class="tab" data-filter="expense" onclick="setFilter(this)">
+            OUTFLOW
+          </button>
+        </div>
+        <div class="srch">
+          <svg class="si" viewBox="0 0 14 14" fill="none">
+            <circle
+              cx="6"
+              cy="6"
+              r="4.5"
+              stroke="currentColor"
+              stroke-width="1.4"
+            />
+            <path
+              d="M10 10l3 3"
+              stroke="currentColor"
+              stroke-width="1.4"
+              stroke-linecap="round"
+            />
+          </svg>
+          <input
+            type="text"
+            id="search"
+            placeholder="search transactions..."
+            oninput="renderLog()"
+          />
+        </div>
+      </div>
+
+      <div id="log"></div>
+    </div>
+    <div class="toast" id="toast"></div>
+    <div class="bal-fs" id="bal-fs" onclick="closeFsBalance()">
+      <div class="bal-fs-inner">
+        <div class="bal-fs-label" id="bal-fs-label">// EXACT BALANCE //</div>
+        <div class="bal-fs-num" id="bal-fs-num">$0.00</div>
+        <div class="bal-fs-hint">// CLICK ANYWHERE TO CLOSE //</div>
+      </div>
+    </div>
+
+    <script>
+      /* ── AUDIO ── */
+      const _AC = window.AudioContext || window.webkitAudioContext;
+      let _ac = null;
+      function ac() {
+        if (!_ac) _ac = new _AC();
+        return _ac;
+      }
+      function beep(freq, dur, type = "square", vol = 0.07, delay = 0) {
+        try {
+          const ctx = ac(),
+            o = ctx.createOscillator(),
+            g = ctx.createGain();
+          o.connect(g);
+          g.connect(ctx.destination);
+          o.type = type;
+          o.frequency.value = freq;
+          const t = ctx.currentTime + delay;
+          g.gain.setValueAtTime(0, t);
+          g.gain.linearRampToValueAtTime(vol, t + 0.006);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+          o.start(t);
+          o.stop(t + dur + 0.02);
+        } catch (e) {}
+      }
+      const sfx = {
+        click: () => beep(700, 0.03, "square", 0.05),
+        add: () => {
+          beep(440, 0.04, "square", 0.06);
+          beep(660, 0.04, "square", 0.06, 0.06);
+          beep(880, 0.09, "square", 0.06, 0.12);
+        },
+        del: () => {
+          beep(280, 0.05, "sawtooth", 0.08);
+          beep(160, 0.08, "sawtooth", 0.06, 0.06);
+        },
+        err: () => {
+          beep(180, 0.08, "sawtooth", 0.09);
+          beep(150, 0.12, "sawtooth", 0.07, 0.08);
+        },
+        export: () =>
+          [0, 0.05, 0.1, 0.15].forEach((d, i) =>
+            beep(440 + i * 120, 0.05, "sine", 0.07, d),
+          ),
+        import: () =>
+          [3, 2, 1, 0].forEach((i, j) =>
+            beep(440 + i * 120, 0.05, "sine", 0.07, j * 0.06),
+          ),
+      };
+
+      /* ── AMOUNT INPUT FORMATTING ── */
+      const amtInput = document.getElementById("f-amount");
+      let rawAmt = ""; // stores digits and at most one dot
+
+      amtInput.addEventListener("keydown", (e) => {
+        // allow: arrows, backspace, delete, tab, enter, ctrl combos
+        if (
+          [
+            "ArrowLeft",
+            "ArrowRight",
+            "ArrowUp",
+            "ArrowDown",
+            "Tab",
+            "Backspace",
+            "Delete",
+          ].includes(e.key)
+        )
+          return;
+        if (e.ctrlKey || e.metaKey) return;
+        // allow digits and one decimal point
+        if (!/[\d.]/.test(e.key)) {
+          e.preventDefault();
+          return;
+        }
+        // block second dot
+        if (e.key === "." && rawAmt.includes(".")) {
+          e.preventDefault();
+          return;
+        }
+        // max 2 decimal places
+        const dotIdx = rawAmt.indexOf(".");
+        if (dotIdx !== -1 && rawAmt.length - dotIdx > 2) {
+          e.preventDefault();
+          return;
+        }
+      });
+
+      amtInput.addEventListener("input", () => {
+        // strip everything except digits and dot
+        let val = amtInput.value.replace(/[^\d.]/g, "");
+        // keep only first dot
+        const parts = val.split(".");
+        if (parts.length > 2) val = parts[0] + "." + parts.slice(1).join("");
+        rawAmt = val;
+        // reformat with thousand separators on integer part
+        const [intPart, decPart] = val.split(".");
+        const formatted =
+          intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",") +
+          (decPart !== undefined ? "." + decPart : "");
+        // preserve cursor position relative to end
+        const selEnd = amtInput.selectionEnd;
+        const oldLen = amtInput.value.length;
+        amtInput.value = formatted;
+        const newLen = amtInput.value.length;
+        const newPos = selEnd + (newLen - oldLen);
+        try {
+          amtInput.setSelectionRange(newPos, newPos);
+        } catch (e) {}
+      });
+
+      amtInput.addEventListener("blur", () => {
+        if (!rawAmt) return;
+        const num = parseFloat(rawAmt);
+        if (isNaN(num)) {
+          amtInput.value = "";
+          rawAmt = "";
+          return;
+        }
+        // on blur: show full formatted with 2 decimals
+        rawAmt = num.toFixed(2);
+        const [i, d] = rawAmt.split(".");
+        amtInput.value = i.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "." + d;
+      });
+
+      amtInput.addEventListener("focus", () => {
+        // on focus: show raw value without extra formatting for easy editing
+        if (rawAmt) amtInput.value = rawAmt;
+      });
+
+      function getAmountValue() {
+        return parseFloat(rawAmt || amtInput.value.replace(/,/g, ""));
+      }
+      function clearAmountInput() {
+        rawAmt = "";
+        amtInput.value = "";
+      }
+
+      /* ── DATA ── */
+      const KEY = "void_wallet_v2";
+      let txs = JSON.parse(localStorage.getItem(KEY) || "[]");
+      let filter = "all",
+        txType = "income";
+      const today = new Date().toISOString().slice(0, 10);
+      document.getElementById("f-date").value = today;
+
+      /* clock */
+      setInterval(() => {
+        document.getElementById("liveclock").textContent =
+          new Date().toLocaleTimeString("en-GB", { hour12: false });
+      }, 1000);
+
+      function save() {
+        localStorage.setItem(KEY, JSON.stringify(txs));
+      }
+      function fmt(n) {
+        return (
+          "$" +
+          Math.abs(n).toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })
+        );
+      }
+      function fmtS(n, t) {
+        return (t === "income" ? "+" : "-") + fmt(n);
+      }
+
+      function fmtCompact(n) {
+        const abs = Math.abs(n),
+          sign = n < 0 ? "-" : "";
+        if (abs >= 1e12)
+          return (
+            sign +
+            "$" +
+            (abs / 1e12).toLocaleString("en-US", { maximumFractionDigits: 2 }) +
+            "T"
+          );
+        if (abs >= 1e9)
+          return (
+            sign +
+            "$" +
+            (abs / 1e9).toLocaleString("en-US", { maximumFractionDigits: 2 }) +
+            "B"
+          );
+        if (abs >= 1e6)
+          return (
+            sign +
+            "$" +
+            (abs / 1e6).toLocaleString("en-US", { maximumFractionDigits: 2 }) +
+            "M"
+          );
+        if (abs >= 1e3)
+          return (
+            sign +
+            "$" +
+            (abs / 1e3).toLocaleString("en-US", { maximumFractionDigits: 2 }) +
+            "K"
+          );
+        return (
+          sign +
+          "$" +
+          abs.toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })
+        );
+      }
+
+      /* ── SUMMARY ── */
+      let prevBal = 0;
+      function updateSummary(anim = false) {
+        const inc = txs
+          .filter((t) => t.type === "income")
+          .reduce((s, t) => s + t.amount, 0);
+        const exp = txs
+          .filter((t) => t.type === "expense")
+          .reduce((s, t) => s + t.amount, 0);
+        const bal = inc - exp;
+        const el = document.getElementById("balance");
+        if (anim && bal !== prevBal) {
+          el.classList.remove("glitch");
+          void el.offsetWidth;
+          el.classList.add("glitch");
+          setTimeout(() => el.classList.remove("glitch"), 450);
+        }
+        prevBal = bal;
+        el.textContent = fmtCompact(bal);
+        el.dataset.exact = (bal < 0 ? "-" : "") + fmt(Math.abs(bal));
+        el.classList.toggle("neg", bal < 0);
+        document.getElementById("total-income").textContent = fmt(inc);
+        document.getElementById("total-expense").textContent = fmt(exp);
+        document.getElementById("tx-count").textContent = txs.length;
+      }
+
+      /* ── CATEGORY DROPDOWN ── */
+      /* ── CATEGORY ICONS ── */
+      const CAT_ICONS = {
+        MISC: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><line x1="8" y1="5" x2="8" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11" r="0.8" fill="currentColor"/></svg>`,
+        SHLT: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8L8 2l6 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 8v5h3v-3h2v3h3V8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+        FOOD: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M5 2v4c0 1.1.9 2 2 2s2-.9 2-2V2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="8" y1="8" x2="8" y2="14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="11" y1="2" x2="11" y2="6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M11 6c0 1.1-.4 2-1 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="11" y1="8" x2="11" y2="14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`,
+        TRNZ: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="5" width="12" height="7" rx="1.5" stroke="currentColor" stroke-width="1.3"/><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="11" cy="12" r="1.5" fill="currentColor"/><path d="M2 8h12" stroke="currentColor" stroke-width="1"/><path d="M5 5L6.5 2h3L11 5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>`,
+        SHOP: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 2h10l-1.5 6H4.5L3 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M4.5 8l.5 4h6l.5-4" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><line x1="3" y1="2" x2="1" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`,
+        MED_: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="3" y="3" width="10" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><line x1="8" y1="5.5" x2="8" y2="10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="5.5" y1="8" x2="10.5" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+        REC_: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polygon points="5,3 13,8 5,13" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><line x1="2" y1="3" x2="2" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+        DATA: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="14" rx="1" stroke="currentColor" stroke-width="1.3"/><line x1="5" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="5" y1="9" x2="11" y2="9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="5" y1="12" x2="8" y2="12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`,
+        CNTX: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="9" height="11" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M7 3V2h6v9h-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><line x1="4.5" y1="7" x2="8.5" y2="7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="4.5" y1="10" x2="8.5" y2="10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`,
+        ASST: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="2,12 5,8 8,10 11,5 14,3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="11,3 14,3 14,6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+        GIFT: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="6" width="12" height="8" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="2" y="4" width="12" height="3" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M8 4c0 0-2-2-2-2s0 2 2 2 2-2 2-2 0 2-2 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="8" y1="6" x2="8" y2="14" stroke="currentColor" stroke-width="1.2"/></svg>`,
+        UTIL: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polygon points="8,1 10,6 15,6 11,9.5 12.5,14.5 8,11.5 3.5,14.5 5,9.5 1,6 6,6" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>`,
+      };
+      function catIcon(code) {
+        const svg = CAT_ICONS[code] || CAT_ICONS["MISC"];
+        return `<div class="cat-ico" style="color:var(--muted)">${svg}</div>`;
+      }
+
+      const CAT_LIST = [
+        { code: "MISC", label: "MISC" },
+        { code: "SHLT", label: "SHELTER" },
+        { code: "FOOD", label: "FOOD" },
+        { code: "TRNZ", label: "TRANSIT" },
+        { code: "SHOP", label: "PURCHASE" },
+        { code: "MED_", label: "MED" },
+        { code: "REC_", label: "LEISURE" },
+        { code: "DATA", label: "DATA" },
+        { code: "CNTX", label: "CONTRACT" },
+        { code: "ASST", label: "ASSET" },
+        { code: "GIFT", label: "GIFT" },
+        { code: "UTIL", label: "UTILITY" },
+      ];
+      let selectedCat = "MISC";
+
+      function buildCatDrop() {
+        const list = document.getElementById("cat-drop-list");
+        list.innerHTML = CAT_LIST.map(
+          (c) => `
+    <div class="cat-opt${c.code === selectedCat ? " active" : ""}" onclick="selectCat('${c.code}','${c.label}')">
+      <span class="cat-opt-ico">${CAT_ICONS[c.code] || CAT_ICONS["MISC"]}</span>
+      <span class="cat-opt-lbl">${c.label}</span>
+    </div>`,
+        ).join("");
+        const cur = CAT_LIST.find((c) => c.code === selectedCat) || CAT_LIST[0];
+        document.getElementById("cat-drop-ico").innerHTML =
+          CAT_ICONS[cur.code] || CAT_ICONS["MISC"];
+        document.getElementById("cat-drop-lbl").textContent = cur.label;
+      }
+      function toggleCatDrop() {
+        sfx.click();
+        document.getElementById("cat-drop").classList.toggle("open");
+      }
+      function selectCat(code, label) {
+        selectedCat = code;
+        document.getElementById("cat-drop-ico").innerHTML =
+          CAT_ICONS[code] || CAT_ICONS["MISC"];
+        document.getElementById("cat-drop-lbl").textContent = label;
+        document.getElementById("cat-drop").classList.remove("open");
+        buildCatDrop();
+        sfx.click();
+      }
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest("#cat-drop")) {
+          document.getElementById("cat-drop").classList.remove("open");
+        }
+      });
+      buildCatDrop();
+
+      /* ── FULLSCREEN BALANCE ── */
+      const fsEl = document.getElementById("bal-fs");
+      const fsNum = document.getElementById("bal-fs-num");
+      function openFsBalance() {
+        const exact =
+          document.getElementById("balance").dataset.exact || "$0.00";
+        const isNeg = exact.startsWith("-");
+        fsNum.textContent = exact;
+        fsNum.className = "bal-fs-num " + (isNeg ? "neg" : "pos");
+        fsEl.classList.add("open");
+        document.body.style.overflow = "hidden";
+        sfx.click();
+      }
+      function closeFsBalance() {
+        fsEl.classList.remove("open");
+        document.body.style.overflow = "";
+      }
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeFsBalance();
+      });
+
+      /* ── BALANCE TOOLTIP ── */
+      const balEl = document.getElementById("balance");
+      const tipEl = document.getElementById("bal-tooltip");
+      balEl.addEventListener("mouseenter", () => {
+        tipEl.textContent = balEl.dataset.exact || "";
+        tipEl.classList.add("show");
+      });
+      balEl.addEventListener("mouseleave", () =>
+        tipEl.classList.remove("show"),
+      );
+
+      /* ── TYPE TOGGLE ── */
+      function setType(t) {
+        sfx.click();
+        txType = t;
+        document.getElementById("btn-inc").className =
+          "tbtn" + (t === "income" ? " ai" : "");
+        document.getElementById("btn-exp").className =
+          "tbtn" + (t === "expense" ? " ae" : "");
+      }
+
+      /* ── FILTER ── */
+      function setFilter(btn) {
+        sfx.click();
+        filter = btn.dataset.filter;
+        document
+          .querySelectorAll(".tab")
+          .forEach((t) => t.classList.remove("active"));
+        btn.classList.add("active");
+        renderLog();
+      }
+
+      /* ── RENDER ── */
+      function esc(s) {
+        return s
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+      function dateLabel(ds) {
+        if (!ds || ds === "?") return "// UNKNOWN";
+        const d = new Date(ds + "T12:00:00");
+        const diff = Math.floor((new Date(today) - d) / 86400000);
+        if (diff === 0) return "// TODAY";
+        if (diff === 1) return "// YESTERDAY";
+        return (
+          "// " +
+          d
+            .toLocaleDateString("en-US", {
+              weekday: "short",
+              month: "short",
+              day: "numeric",
+              year:
+                d.getFullYear() !== new Date().getFullYear()
+                  ? "numeric"
+                  : undefined,
+            })
+            .toUpperCase()
+        );
+      }
+      function groupByDate(list) {
+        const m = {};
+        list.forEach((t) => {
+          const d = t.date || "?";
+          if (!m[d]) m[d] = [];
+          m[d].push(t);
+        });
+        return m;
+      }
+      function renderLog() {
+        const q = document.getElementById("search").value.toLowerCase().trim();
+        let list = [...txs].reverse();
+        if (filter !== "all") list = list.filter((t) => t.type === filter);
+        if (q)
+          list = list.filter(
+            (t) =>
+              t.title.toLowerCase().includes(q) ||
+              (t.comment || "").toLowerCase().includes(q),
+          );
+        const log = document.getElementById("log");
+        if (!list.length) {
+          log.innerHTML =
+            '<div class="log-empty">// NO_RECORDS_FOUND &nbsp;// QUERY RETURNED NULL //</div>';
+          return;
+        }
+        const groups = groupByDate(list);
+        const dates = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+        log.innerHTML = dates
+          .map(
+            (date) => `
+    <div class="sh">${dateLabel(date)}</div>
+    <div class="tx-list">
+      ${groups[date]
+        .map(
+          (t) => `
+        <div class="tx ${t.type}">
+          <div class="tx-cat">${catIcon(t.cat)}</div>
+          <div class="tx-info">
+            <div class="tx-ttl">${esc(t.title)}</div>
+            <div class="tx-meta">${t.comment ? esc(t.comment) : t.type.toUpperCase()}</div>
+          </div>
+          <div class="tx-r">
+            <div class="tx-amt ${t.type}">${fmtS(t.amount, t.type)}</div>
+            <div class="tx-dt">${t.date}${t.time ? ' &nbsp;<span style="color:var(--cyan);opacity:.5">' + t.time + "</span>" : ""}</div>
+          </div>
+          <button class="bdel" onclick="deleteTx('${t.id}')">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 1.5l8 8M9.5 1.5l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+        </div>`,
+        )
+        .join("")}
+    </div>`,
+          )
+          .join("");
+      }
+
+      /* ── ADD ── */
+      function addTransaction() {
+        const title = document.getElementById("f-title").value.trim();
+        const amount = getAmountValue();
+        const cat = selectedCat;
+        const date = document.getElementById("f-date").value;
+        const comment = document.getElementById("f-comment").value.trim();
+        if (!title || isNaN(amount) || amount <= 0) {
+          sfx.err();
+          const fid = !title ? "f-title" : "f-amount";
+          const el = document.getElementById(fid);
+          el.focus();
+          el.style.borderColor = "var(--red)";
+          setTimeout(() => (el.style.borderColor = ""), 1400);
+          showToast("ERR: INVALID_INPUT", "err");
+          return;
+        }
+        sfx.add();
+        txs.push({
+          id: Date.now().toString(),
+          title,
+          amount,
+          type: txType,
+          cat,
+          date,
+          time: new Date().toLocaleTimeString("en-GB", { hour12: false }),
+          comment,
+        });
+        save();
+        updateSummary(true);
+        renderLog();
+        document.getElementById("f-title").value = "";
+        clearAmountInput();
+        document.getElementById("f-comment").value = "";
+        document.getElementById("f-date").value = today;
+        showToast("TX_CONFIRMED // LEDGER_UPDATED", "ok");
+      }
+
+      /* ── DELETE ── */
+      function deleteTx(id) {
+        sfx.del();
+        txs = txs.filter((t) => t.id !== id);
+        save();
+        updateSummary(true);
+        renderLog();
+      }
+
+      document.addEventListener("keydown", (e) => {
+        if (
+          e.key === "Enter" &&
+          ["f-title", "f-amount", "f-comment"].includes(e.target.id)
+        )
+          addTransaction();
+      });
+
+      /* ── EXPORT ── */
+      function csvCell(s) {
+        return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+      }
+      function exportCSV() {
+        if (!txs.length) {
+          sfx.err();
+          showToast("ERR: LEDGER_EMPTY", "err");
+          return;
+        }
+        sfx.export();
+        const hdr = [
+          "id",
+          "date",
+          "type",
+          "category",
+          "title",
+          "amount",
+          "comment",
+        ];
+        const rows = txs.map((t) => [
+          t.id,
+          t.date,
+          t.type,
+          t.cat,
+          csvCell(t.title),
+          t.amount.toFixed(2),
+          csvCell(t.comment || ""),
+        ]);
+        const csv = [hdr, ...rows].map((r) => r.join(",")).join("\r\n");
+        const blob = new Blob(["\uFEFF" + csv], {
+          type: "text/csv;charset=utf-8;",
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "void_wallet_" + today + ".csv";
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast("EXPORT_OK // " + txs.length + " RECORDS", "ok");
+      }
+
+      /* ── IMPORT ── */
+      function importCSV(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const text = ev.target.result.replace(/^\uFEFF/, "");
+            const lines = parseCSV(text);
+            if (lines.length < 2) {
+              sfx.err();
+              showToast("ERR: CSV_INVALID", "err");
+              return;
+            }
+            const hdr = lines[0].map((h) => h.trim().toLowerCase());
+            const ix = (f) => hdr.indexOf(f);
+            const [iId, iDt, iType, iCat, iTtl, iAmt, iCom] = [
+              "id",
+              "date",
+              "type",
+              "category",
+              "title",
+              "amount",
+              "comment",
+            ].map(ix);
+            if ([iDt, iType, iTtl, iAmt].some((i) => i === -1)) {
+              sfx.err();
+              showToast("ERR: MISSING_COLUMNS", "err");
+              return;
+            }
+            const seen = new Set(txs.map((t) => t.id));
+            let added = 0,
+              skipped = 0;
+            for (let i = 1; i < lines.length; i++) {
+              const c = lines[i];
+              if (c.length < 4) continue;
+              const amt = parseFloat(c[iAmt]);
+              if (isNaN(amt) || amt <= 0) {
+                skipped++;
+                continue;
+              }
+              const type = c[iType] === "income" ? "income" : "expense";
+              const id =
+                iId !== -1 && c[iId] ? c[iId] : Date.now().toString() + i;
+              if (seen.has(id)) {
+                skipped++;
+                continue;
+              }
+              seen.add(id);
+              txs.push({
+                id,
+                date: c[iDt] || today,
+                type,
+                cat: iCat !== -1 && c[iCat] ? c[iCat] : "💰",
+                title: c[iTtl] || "IMPORTED",
+                amount: amt,
+                comment: iCom !== -1 ? c[iCom] : "",
+              });
+              added++;
+            }
+            save();
+            updateSummary(true);
+            renderLog();
+            sfx.import();
+            showToast(
+              "IMPORT_OK // +" +
+                added +
+                " TX" +
+                (skipped ? " // SKIP:" + skipped : ""),
+              "ok",
+            );
+          } catch (err) {
+            sfx.err();
+            showToast("ERR: PARSE_FAILED", "err");
+          }
+          e.target.value = "";
+        };
+        reader.readAsText(file, "UTF-8");
+      }
+      function parseCSV(text) {
+        const rows = [];
+        let row = [],
+          cell = "",
+          inQ = false;
+        for (let i = 0; i < text.length; i++) {
+          const ch = text[i];
+          if (inQ) {
+            if (ch === '"' && text[i + 1] === '"') {
+              cell += '"';
+              i++;
+            } else if (ch === '"') inQ = false;
+            else cell += ch;
+          } else {
+            if (ch === '"') inQ = true;
+            else if (ch === ",") {
+              row.push(cell);
+              cell = "";
+            } else if (ch === "\n" || ch === "\r") {
+              row.push(cell);
+              cell = "";
+              if (row.some((c) => c !== "")) rows.push(row);
+              row = [];
+              if (ch === "\r" && text[i + 1] === "\n") i++;
+            } else cell += ch;
+          }
+        }
+        if (cell || row.length) {
+          row.push(cell);
+          if (row.some((c) => c !== "")) rows.push(row);
+        }
+        return rows;
+      }
+
+      /* ── TOAST ── */
+      const toastEl = document.getElementById("toast");
+      let toastT;
+      function showToast(msg, type = "") {
+        clearTimeout(toastT);
+        toastEl.textContent = msg;
+        toastEl.className = "toast " + (type || "");
+        requestAnimationFrame(() => toastEl.classList.add("show"));
+        toastT = setTimeout(() => toastEl.classList.remove("show"), 3000);
+      }
+
+      /* ── FAVICON ── */
+      (function () {
+        const c = document.createElement("canvas");
+        c.width = c.height = 64;
+        const x = c.getContext("2d");
+        const cyan = "#00f5ff";
+        const bg = "#050508";
+
+        // background
+        x.fillStyle = bg;
+        x.fillRect(0, 0, 64, 64);
+
+        // outer border dim
+        x.strokeStyle = "rgba(0,245,255,0.25)";
+        x.lineWidth = 1;
+        x.strokeRect(2, 2, 60, 60);
+
+        // corner brackets
+        x.strokeStyle = cyan;
+        x.lineWidth = 3;
+        x.lineCap = "square";
+        const br = 10; // bracket reach
+        [
+          [2, 2],
+          [62, 2],
+          [2, 62],
+          [62, 62],
+        ].forEach(([cx, cy]) => {
+          const sx = cx === 2 ? 1 : -1;
+          const sy = cy === 2 ? 1 : -1;
+          x.beginPath();
+          x.moveTo(cx + sx * br, cy);
+          x.lineTo(cx, cy);
+          x.lineTo(cx, cy + sy * br);
+          x.stroke();
+        });
+
+        // scanlines subtle
+        x.fillStyle = "rgba(0,0,0,0.18)";
+        for (let i = 0; i < 64; i += 4) x.fillRect(0, i, 64, 2);
+
+        // V shape (VOID)
+        x.strokeStyle = cyan;
+        x.lineWidth = 3.5;
+        x.lineJoin = "round";
+        x.lineCap = "round";
+        x.shadowColor = cyan;
+        x.shadowBlur = 10;
+        x.beginPath();
+        x.moveTo(16, 16);
+        x.lineTo(32, 44);
+        x.lineTo(48, 16);
+        x.stroke();
+
+        // dot under V
+        x.fillStyle = cyan;
+        x.shadowBlur = 14;
+        x.beginPath();
+        x.arc(32, 50, 3, 0, Math.PI * 2);
+        x.fill();
+
+        // side ticks
+        x.shadowBlur = 0;
+        x.strokeStyle = "rgba(0,245,255,0.35)";
+        x.lineWidth = 1.5;
+        x.beginPath();
+        x.moveTo(6, 32);
+        x.lineTo(12, 32);
+        x.stroke();
+        x.beginPath();
+        x.moveTo(52, 32);
+        x.lineTo(58, 32);
+        x.stroke();
+
+        document.getElementById("favicon").href = c.toDataURL("image/png");
+      })();
+
+      /* ── INIT ── */
+      updateSummary();
+      renderLog();
+    </script>
+  </body>
+</html>
