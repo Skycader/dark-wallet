@@ -6,7 +6,7 @@
     <title>VOID_WALLET</title>
     <link rel="icon" id="favicon" type="image/png" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@600;700&display=swap"
       rel="stylesheet"
     />
     <style>
@@ -296,6 +296,12 @@
       .balance-amount.neg {
         color: var(--red);
         text-shadow: 0 0 28px rgba(255, 51, 85, 0.45);
+      }
+      #bal-num {
+        font-family: "Orbitron", sans-serif;
+      }
+      #bal-sym {
+        font-weight: inherit;
       }
       .glitch {
         animation: glitchAnim 0.45s steps(1);
@@ -624,7 +630,6 @@
         opacity: 0.65;
       }
       .amt-wrap input {
-        padding-left: 22px;
         letter-spacing: 0.07em;
         font-size: 14px;
       }
@@ -1487,14 +1492,12 @@
         transform: translateY(-50%);
         color: var(--cyan);
         font-family: "Share Tech Mono", monospace;
-        font-size: 13px;
+        font-size: 12px;
         pointer-events: none;
         z-index: 1;
         opacity: 0.65;
-        max-width: 28px;
-        overflow: hidden;
-        text-overflow: clip;
         white-space: nowrap;
+        letter-spacing: 0.04em;
       }
 
       @media (max-width: 480px) {
@@ -1545,7 +1548,7 @@
         <div class="c br"></div>
         <div class="blbl" id="bal-wallet-label">// WALLET //</div>
         <div class="balance-amount" id="balance" onclick="openFsBalance()">
-          $0.00
+          <span id="bal-sym"></span><span id="bal-num">0.00</span>
         </div>
         <div class="bal-tooltip" id="bal-tooltip"></div>
         <div class="sub-row">
@@ -2162,10 +2165,27 @@
         return wallets.find((w) => w.id === id);
       }
 
+      function updateAmtSym() {
+        const sym = curWallet().symbol;
+        const symEl = document.getElementById("amt-sym");
+        const inpEl = document.getElementById("f-amount");
+        symEl.textContent = sym;
+        // measure rendered width and set input padding accordingly
+        requestAnimationFrame(() => {
+          const w = symEl.offsetWidth;
+          inpEl.style.paddingLeft = w + 16 + "px";
+        });
+      }
+
+      function symFmt(sym) {
+        if (!sym) return "";
+        return sym.length === 1 ? sym + "\u2006" : sym + " ";
+      }
+
       function fmt(n, sym) {
         sym = sym ?? curWallet().symbol;
         return (
-          sym +
+          symFmt(sym) +
           Math.abs(n).toLocaleString("en-US", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
@@ -2178,39 +2198,40 @@
 
       function fmtCompact(n, sym) {
         sym = sym ?? curWallet().symbol;
+        const s = symFmt(sym);
         const abs = Math.abs(n),
           sign = n < 0 ? "-" : "";
         if (abs >= 1e12)
           return (
             sign +
-            sym +
+            s +
             (abs / 1e12).toLocaleString("en-US", { maximumFractionDigits: 2 }) +
             "T"
           );
         if (abs >= 1e9)
           return (
             sign +
-            sym +
+            s +
             (abs / 1e9).toLocaleString("en-US", { maximumFractionDigits: 2 }) +
             "B"
           );
         if (abs >= 1e6)
           return (
             sign +
-            sym +
+            s +
             (abs / 1e6).toLocaleString("en-US", { maximumFractionDigits: 2 }) +
             "M"
           );
         if (abs >= 1e3)
           return (
             sign +
-            sym +
+            s +
             (abs / 1e3).toLocaleString("en-US", { maximumFractionDigits: 2 }) +
             "K"
           );
         return (
           sign +
-          sym +
+          s +
           abs.toLocaleString("en-US", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
@@ -2243,7 +2264,7 @@
     </button>`;
         document.getElementById("bal-wallet-label").textContent =
           "// " + curWallet().name + " //";
-        document.getElementById("amt-sym").textContent = curWallet().symbol;
+        updateAmtSym();
         initDrag();
       }
 
@@ -2646,8 +2667,20 @@
           setTimeout(() => el.classList.remove("glitch"), 450);
         }
         prevBal = bal;
-        el.textContent = fmtCompact(bal);
-        el.dataset.exact = (bal < 0 ? "-" : "") + fmt(Math.abs(bal));
+        const sym = curWallet().symbol;
+        const isAscii = /^[\x00-\x7F]+$/.test(sym);
+        const sign = bal < 0 ? "-" : "";
+        const numStr = fmtCompact(Math.abs(bal), ""); // digits only, no symbol
+
+        const symEl = document.getElementById("bal-sym");
+        symEl.textContent = sign + symFmt(sym);
+        symEl.style.fontFamily = isAscii
+          ? "'Orbitron',sans-serif"
+          : "'Share Tech Mono',monospace";
+
+        document.getElementById("bal-num").textContent = numStr;
+
+        el.dataset.exact = sign + fmt(Math.abs(bal));
         el.classList.toggle("neg", bal < 0);
         document.getElementById("total-income").textContent = fmt(inc);
         document.getElementById("total-expense").textContent = fmt(exp);
