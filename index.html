@@ -3111,44 +3111,65 @@
         return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
       }
       function exportCSV() {
-        const wTxs = txs.filter((t) => t.walletId === currentWalletId);
-        if (!wTxs.length) {
+        if (!txs.length) {
           sfx.err();
           showToast("ERR: LEDGER_EMPTY", "err");
           return;
         }
         sfx.export();
+        const walletMeta = wallets
+          .map(
+            (w) => `##WALLET:${w.id}:${csvCell(w.name)}:${csvCell(w.symbol)}`,
+          )
+          .join("\r\n");
         const hdr = [
           "id",
           "walletId",
+          "walletName",
           "date",
+          "time",
           "type",
           "category",
           "title",
           "amount",
           "comment",
         ];
-        const rows = wTxs.map((t) => [
-          t.id,
-          t.walletId || "",
-          t.date,
-          t.type,
-          t.cat,
-          csvCell(t.title),
-          t.amount.toFixed(2),
-          csvCell(t.comment || ""),
-        ]);
-        const csv = [hdr, ...rows].map((r) => r.join(",")).join("\r\n");
+        const rows = txs.map((t) => {
+          const w = walletById(t.walletId) || wallets[0];
+          return [
+            t.id,
+            t.walletId || "",
+            csvCell(w.name),
+            t.date || "",
+            t.time || "",
+            t.type,
+            t.cat || "MISC",
+            csvCell(t.title),
+            t.amount.toFixed(2),
+            csvCell(t.comment || ""),
+          ];
+        });
+        const csv =
+          walletMeta +
+          "\r\n" +
+          [hdr, ...rows].map((r) => r.join(",")).join("\r\n");
         const blob = new Blob(["\uFEFF" + csv], {
           type: "text/csv;charset=utf-8;",
         });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "void_wallet_" + curWallet().name + "_" + today + ".csv";
+        a.download = "void_wallet_ALL_" + getToday() + ".csv";
         a.click();
         URL.revokeObjectURL(url);
-        showToast("EXPORT_OK // " + wTxs.length + " RECORDS", "ok");
+        showToast(
+          "EXPORT_OK // " +
+            txs.length +
+            " TX // " +
+            wallets.length +
+            " WALLETS",
+          "ok",
+        );
       }
 
       /* outside-click to close modals */
@@ -3174,17 +3195,44 @@
         reader.onload = (ev) => {
           try {
             const text = ev.target.result.replace(/^\uFEFF/, "");
-            const lines = parseCSV(text);
-            if (lines.length < 2) {
+            const allLines = text.split(/\r?\n/).filter((l) => l.trim());
+
+            // restore wallet definitions from ##WALLET: header lines
+            const dataLines = [];
+            let walletsAdded = 0;
+            for (const line of allLines) {
+              if (line.startsWith("##WALLET:")) {
+                const parts = line.slice(9).split(":");
+                const id = parts[0];
+                const name = (parts[1] || "IMPORTED")
+                  .replace(/^"|"$/g, "")
+                  .replace(/""/g, '"');
+                const symbol = (parts[2] || "$")
+                  .replace(/^"|"$/g, "")
+                  .replace(/""/g, '"');
+                if (!walletById(id)) {
+                  wallets.push({ id, name, symbol });
+                  walletsAdded++;
+                }
+              } else {
+                dataLines.push(line);
+              }
+            }
+            if (walletsAdded) saveW();
+
+            const csvRows = parseCSV(dataLines.join("\n"));
+            if (csvRows.length < 2) {
               sfx.err();
               showToast("ERR: CSV_INVALID", "err");
               return;
             }
-            const hdr = lines[0].map((h) => h.trim().toLowerCase());
+            const hdr = csvRows[0].map((h) => h.trim().toLowerCase());
             const ix = (f) => hdr.indexOf(f);
-            const [iId, iDt, iType, iCat, iTtl, iAmt, iCom] = [
+            const [iId, iWid, iDt, iTm, iType, iCat, iTtl, iAmt, iCom] = [
               "id",
+              "walletid",
               "date",
+              "time",
               "type",
               "category",
               "title",
@@ -3199,8 +3247,8 @@
             const seen = new Set(txs.map((t) => t.id));
             let added = 0,
               skipped = 0;
-            for (let i = 1; i < lines.length; i++) {
-              const c = lines[i];
+            for (let i = 1; i < csvRows.length; i++) {
+              const c = csvRows[i];
               if (c.length < 4) continue;
               const amt = parseFloat(c[iAmt]);
               if (isNaN(amt) || amt <= 0) {
@@ -3215,11 +3263,17 @@
                 continue;
               }
               seen.add(id);
+              const wid =
+                iWid !== -1 && c[iWid] && walletById(c[iWid])
+                  ? c[iWid]
+                  : currentWalletId;
               txs.push({
                 id,
+                walletId: wid,
                 date: c[iDt] || today,
+                time: iTm !== -1 ? c[iTm] : "",
                 type,
-                cat: iCat !== -1 && c[iCat] ? c[iCat] : "💰",
+                cat: iCat !== -1 && c[iCat] ? c[iCat] : "MISC",
                 title: c[iTtl] || "IMPORTED",
                 amount: amt,
                 comment: iCom !== -1 ? c[iCom] : "",
@@ -3227,6 +3281,7 @@
               added++;
             }
             save();
+            renderWalletBar();
             updateSummary(true);
             renderLog();
             sfx.import();
@@ -3234,12 +3289,14 @@
               "IMPORT_OK // +" +
                 added +
                 " TX" +
+                (walletsAdded ? " // +" + walletsAdded + " WALLETS" : "") +
                 (skipped ? " // SKIP:" + skipped : ""),
               "ok",
             );
           } catch (err) {
             sfx.err();
             showToast("ERR: PARSE_FAILED", "err");
+            console.error(err);
           }
           e.target.value = "";
         };
